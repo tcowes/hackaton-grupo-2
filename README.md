@@ -1,2 +1,6 @@
 # hackaton-grupo-2
-holaaaaaaaa..
+
+## Integrantes:
+- Tadeo Soresi
+- Tomás Cowes
+- Matías Krapf
