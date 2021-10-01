@@ -3,3 +3,4 @@
 ## Integrantes:
 - Tadeo Soresi
 - Tomás Cowes
+- Gonzalo Zinoni
