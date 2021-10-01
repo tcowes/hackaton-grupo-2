@@ -3,17 +3,18 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import pandas as pd
 
+
 class MongoDB():
     ''' Clase que inicializa MongoDB y provee de distintos metodos '''
     def __init__(self):
         try:
-            self.host_mongo  = 'mongodb://localhost:27017/'
-            self.cursor= MongoClient(self.host_mongo)
+            self.host_mongo = 'mongodb://localhost:27017/'
+            self.cursor = MongoClient(self.host_mongo)
             self.db = self.cursor.hackaton_data
         except ConnectionFailure:
             print('--- ERROR AL CONECTARSE A LOCALHOST, POR FAVOR VERIFICAR SI MONGODB ESTA CORRIENDO ---')
             return False
-    
+
     def return_db(self):
         return self.db
 
@@ -26,7 +27,7 @@ class MongoDB():
     def insert_one(self, query, collection=None):
         self.db[collection].insert_one(query)
         print('--- TWEET INSERTADO EN BD ---')
-    
+
     def delete_all(self, collection=None):
         self.db[collection].remove({})
         print('--- ELIMINADOS TODOS LOS REGISTROS DB ---')
