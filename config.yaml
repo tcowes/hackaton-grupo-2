@@ -1,0 +1,11 @@
+mongo:
+  host: 'mongodb://localhost:27017/'
+  collections:
+    top_ten_hackaton: hackatonTopTen
+    top_ten_hackaton_epi: hackatonTopTenEpisodes
+ott_sites:
+  HBOMax:
+    countries:
+      AR: # poner url
+    urls:
+      top_ten_section: https://comet-latam.api.hbo.com/express-content/{section_id}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country_code}
