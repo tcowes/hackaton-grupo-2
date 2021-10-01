@@ -3,6 +3,6 @@
 ## Integrantes:
 - Tadeo Soresi
 - Tomás Cowes
-- Matías Krapf.
+- Matías Krapf
 - Gonzalo Zinoni
 - Patricio Quattrini
