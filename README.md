@@ -4,3 +4,5 @@
 - Tadeo Soresi
 - Tomás Cowes
 - Matías Krapf
+- Gonzalo Zinoni
+- Patricio Quattrini
