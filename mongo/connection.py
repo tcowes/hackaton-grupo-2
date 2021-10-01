@@ -14,20 +14,22 @@ class MongoDB():
             print('--- ERROR AL CONECTARSE A LOCALHOST, POR FAVOR VERIFICAR SI MONGODB ESTA CORRIENDO ---')
             return False
     
-    def insert_one(self, query, collection='tweets'):
-        self.db[collection].insert_one(query)
-        print('--- TWEET INSERTADO EN BD ---')
-    
-    def delete_all(self, collection='tweets'):
-        self.db[collection].remove({})
-        print('--- ELIMINADOS TODOS LOS REGISTROS DB ---')
-    
     def return_db(self):
         return self.db
 
-    def return_collection(self, collection='content'):
+    def content_collection(self, collection='content'):
         return self.db[collection]
 
+    def epi_collection(self, collection='episodes'):
+        return self.db[collection]
+
+    def insert_one(self, query, collection=None):
+        self.db[collection].insert_one(query)
+        print('--- TWEET INSERTADO EN BD ---')
+    
+    def delete_all(self, collection=None):
+        self.db[collection].remove({})
+        print('--- ELIMINADOS TODOS LOS REGISTROS DB ---')
 class Dataframe():
     ''' Clase para usar en jupyter notebook
      que trae la data de mongo en formato dataframe '''
