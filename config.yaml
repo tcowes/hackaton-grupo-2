@@ -6,7 +6,7 @@ mongo:
 ott_sites:
   HBOMax:
     countries:
-      AR: # poner url
+      AR:
     urls:
       deeplink: https://play.hbomax.com/page/
       section_api: https://comet-latam.api.hbo.com/express-content/{section}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country}

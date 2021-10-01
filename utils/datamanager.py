@@ -2,30 +2,24 @@ import time
 import logging
 import requests
 import threading
+from common import config
+from utils.mongo import mongo
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from common import config
-# from mongo import collections
 
 
 class Datamanager():
-    '''
-    Este script es un set de metodos que yo uso en todas mis plataformas (Juanma) si tienen alguna duda sobre esto me pueden preguntar.
-    Para usarlo solamente se tiene que importar con:
-        - from handle.datamanager import Datamanager
-    '''
     def __init__(self):
         self.mongo = mongo()
-        self.titanScraping = config()['mongo']['collections']['scraping']
-        self.titanScrapingEpisodios = config()['mongo']['collections']['episode']
+        self.database = config()['mongo']['collections']['hackatonTopTen']
         self.sesion = requests.session()
 
     def _getListDB(self, DB):
         '''
         Hace una query al mongo local con el codigo de plataforma y devuelve una lista de contenidos de esa plataforma
         '''
-        if DB == self.titanScraping:
+        if DB == self.database:
             listDB = self.mongo.db[DB].find({'PlatformCode': self._platform_code, 'CreatedAt': self._created_at}, projection={'_id': 0, 'Id': 1, 'Title': 1})
         else:
             listDB = self.mongo.db[DB].find({'PlatformCode': self._platform_code, 'CreatedAt': self._created_at}, projection={'_id': 0, 'Id': 1, 'Title': 1, 'ParentId' : 1})
@@ -218,17 +212,10 @@ class Datamanager():
         '''
         if len(listPayload) != 0:
             self.mongo.insertMany(DB, listPayload)
-            if DB == self.titanScraping:
-                print("\x1b[1;33;40m INSERTADAS {} PELICULAS/SERIES \x1b[0m".format(len(listPayload)))
-                print("\x1b[1;33;40m SKIPPED {} PELICULAS/SERIES \x1b[0m".format(self.skippedTitles))
-                listPayload.clear()
-            elif DB == self.titanScrapingEpisodios:
-                print("\x1b[1;33;40m INSERTADOS {} EPISODIOS \x1b[0m".format(len(listPayload)))
-                print("\x1b[1;33;40m SKIPPED {} EPISODIOS \x1b[0m".format(self.skippedEpis))
-                listPayload.clear()
-            else:
-                print("\x1b[1;33;40m INSERTADAS {} ENTRADAS \x1b[0m".format(len(listPayload)))
-                listPayload.clear()
+            print("\x1b[1;33;40m INSERTADAS {} PELICULAS/SERIES \x1b[0m".format(len(listPayload)))
+            print("\x1b[1;33;40m SKIPPED {} PELICULAS/SERIES \x1b[0m".format(self.skippedTitles))
+            listPayload.clear()
+
 
     def _getJSON(self, URL, headers=None, data=None, json=None, showURL=True, usePOST=False, timeOut=0):
         '''
