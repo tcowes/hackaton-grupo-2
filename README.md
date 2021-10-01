@@ -1,2 +1,6 @@
 # hackaton-grupo-2
-#lala
+
+## Integrantes:
+- Tadeo Soresi
+- Tomás Cowes
+- Patricio Quattrini
