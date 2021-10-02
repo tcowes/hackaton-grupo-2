@@ -11,3 +11,6 @@ ott_sites:
       deeplink: https://play.hbomax.com/page/
       section_api: https://comet-latam.api.hbo.com/express-content/{section}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country}
       content_api: https://comet-latam.api.hbo.com/express-content/{content_id}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country}
+  Netflix:
+    countries:
+      AR:

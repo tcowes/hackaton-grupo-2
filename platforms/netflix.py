@@ -93,18 +93,23 @@ class Netflix():
             try:
                 episode_selector = self.driver.find_element_by_css_selector(
                     "div[class='episodeSelector-dropdown']").click()
-                episode_selector.find_element_by_css_selector(
-                    "button[class='dropdown-toggle ltr-111bn9j']").click()
-                dropdown = episode_selector.find_elements_by_css_selector(
-                    "li[data-uia='dropdown-menu-item']")
+                dropdown = self.driver.find_elements_by_class_name(
+                    "ltr-bbkt7g")
                 content['seasons'] = []
                 for data in dropdown:
-                    content['seasons'].append({'Season': data.find_element_by_css_selector(
-                    "div[class='episodeSelector--option']").text, 'Episodes': data.find_element_by_css_selector(
-                    "span[class='episodeSelector--option-label-numEpisodes']").text})
-            except:
-                # ACA QUEDE TOMIIIIIIIIII
-                pass
+                    match_epi = re.search(r'(episodes\)|episodios\))', data.text, flags=re.I)
+                    if match_epi:
+                        content['seasons'].append({'Season': data.find_element_by_css_selector(
+                        "div[class='episodeSelector--option']").text.split('(')[0].strip(), 'Episodes': data.find_element_by_css_selector(
+                        "span[class='episodeSelector--option-label-numEpisodes']").text.replace('(','').replace(')','')})
+                        print(content['seasons'])
+            except Exception:
+                find_episodios = self.driver.find_elements_by_class_name("titleCard-title_index")
+                if find_episodios:
+                    content['seasons'] = []
+                    content['seasons'].append({'Season': "1", 'Episodes': str(len(find_episodios))})
+                    print(content['seasons'])
+
             try:
                 content['duration'] = self.driver.find_element_by_css_selector(
                     "span[class='duration']").text
