@@ -63,19 +63,19 @@ class Netflix():
         else:
             content = self.extract_data(ids)
             for content in content:
-                print(content)
+                self.build_payload(content)
 
-        WebDriverWait(self.driver, 60).until(
-                        EC.element_to_be_clickable((By.XPATH, "//div[@class='previewModal-close']"))).click()
-        kids = self.driver.find_element_by_xpath("//a[@href='/Kids']")
-        self.driver.execute_script("arguments[0].click();", kids)
+        # WebDriverWait(self.driver, 60).until(
+        #                 EC.element_to_be_clickable((By.XPATH, "//div[@class='previewModal-close']"))).click()
+        # kids = self.driver.find_element_by_xpath("//a[@href='/Kids']")
+        # self.driver.execute_script("arguments[0].click();", kids)
 
-        time.sleep(4)
-        ids = self.extract_ids()
-        if not ids:
-            raise AssertionError('--- NO PUDIERON SCRAPEARSE IDS KIDS MOST WATCHED ---')
-        else:
-            self.extract_data(ids)
+        # time.sleep(4)
+        # ids = self.extract_ids()
+        # if not ids:
+        #     raise AssertionError('--- NO PUDIERON SCRAPEARSE IDS KIDS MOST WATCHED ---')
+        # else:
+        #     self.extract_data(ids)
         Datamanager._insertIntoDB(self, self.content, self.database)
         self.sesion.close()
         self.driver.quit()
@@ -104,7 +104,7 @@ class Netflix():
 
     def extract_data(self, ids):
         ''' Extract all data of contents '''
-
+        processed_data = []
         for _id in ids:
             url = self.content_url + _id
             self.driver.get(url)
@@ -179,7 +179,8 @@ class Netflix():
                 content['genres'] = [genre.text.replace(',', '') for genre in pre_genres]
             except NoSuchElementException:
                 content['genres'] = None
-            yield content
+            processed_data.append(content)
+        return processed_data
 
     def build_payload(self, content):
         '''Builds payload depending type'''
