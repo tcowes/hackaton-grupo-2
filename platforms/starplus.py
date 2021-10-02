@@ -56,7 +56,6 @@ class StarPlus():
         self.payloads_epi = []
         self.scraped = []
         self.scraped_epi = []
-        self.ids_originals = []
         self.skippedTitles = 0
         self.skippedEpis = 0
 
