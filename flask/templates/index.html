@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 class="display-4">Top 10 Contenidos</h1>
+          <p class="lead">De las 5 plataformas más conocidas (Netflix, Amazon, Starplus, HBOMax, AppleTV).</p>
+        </div>
+      </div>
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" href="#">Amazon Prime</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Netflix</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Starplus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">AppleTV</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#HBOMax">HBOMax</a>
+          </li>
+      </ul>
+    {% for d in data %}
+        {% if d['PlatformName'] == 'HBOMax' %}
+            <div class="col-md-12 col-12 mt-2 border" id="HBOMax">
+                {% include 'body.html' %}
+            </div>
+        {% elif d['PlatformName'] == 'Netlix' %}
+        <div class="col-md-12 col-12 mt-2 border" id="Netflix">
+            {% include 'body.html' %}
+        </div>
+        {% elif d['PlatformName'] == 'Netlix' %}
+        <div class="col-md-12 col-12 mt-2 border" id="Netflix">
+            {% include 'body.html' %}
+        </div>
+        {% elif d['PlatformName'] == 'Netlix' %}
+        <div class="col-md-12 col-12 mt-2 border" id="Netflix">
+            {% include 'body.html' %}
+        </div>
+        {% elif d['PlatformName'] == 'Netlix' %}
+        <div class="col-md-12 col-12 mt-2 border" id="Netflix">
+            {% include 'body.html' %}
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
