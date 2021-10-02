@@ -1,3 +1,4 @@
+from os import EX_PROTOCOL
 import time
 import logging
 import requests
@@ -41,52 +42,68 @@ class Datamanager():
         Luego de chequear si ya existe el contenido en la lista de mongo, usa el metodo noInserta() o inserta()
         '''
         if isEpi:
-            if hasDuplicates: #Esta opcion hace que solo chequee IDs sin mirar el parent, para evitar
-                              #duplicacion de IDs entre distintos ParentId
+            if hasDuplicates:
+                # Esta opcion hace que solo chequee IDs sin mirar el parent,
+                # para evitar duplicacion de IDs entre distintos ParentId
                 if any((payload['Id'] == d['Id']) for d in listDB):
-                    Datamanager.noInserta(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                    Datamanager.noInserta(
+                        self, payload, listDB, listPayload,
+                        currentItem, totalItems, isEpi)
                 else:
-                    Datamanager.insertar(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                    Datamanager.insertar(
+                        self, payload, listDB, listPayload, currentItem,
+                        totalItems, isEpi)
             else:
                 if any((payload['Id'] == d['Id'] and payload['ParentId'] == d['ParentId']) for d in listDB):
-                    Datamanager.noInserta(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                    Datamanager.noInserta(
+                        self, payload, listDB, listPayload,
+                        currentItem, totalItems, isEpi)
                 else:
-                    Datamanager.insertar(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                    Datamanager.insertar(
+                        self, payload, listDB, listPayload,
+                        currentItem, totalItems, isEpi)
         else:
             if any(payload['Id'] == d['Id'] for d in listDB):
-                Datamanager.noInserta(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                Datamanager.noInserta(
+                    self, payload, listDB, listPayload,
+                    currentItem, totalItems, isEpi)
             else:
-                Datamanager.insertar(self,payload,listDB,listPayload,currentItem,totalItems,isEpi)
+                Datamanager.insertar(
+                    self, payload, listDB, listPayload,
+                    currentItem, totalItems, isEpi)
 
-
-    def noInserta(self, payload, listDB, listPayload, currentItem=0, totalItems=0, isEpi=False):
+    def noInserta(self, payload, listDB, listPayload,
+                  currentItem=0, totalItems=0, isEpi=False):
         '''
         Este metodo se usa solo en _checkDBandAppend() NO usar en scripts!!!
-        Solamente es lo que determina que se imprime en el caso que no se inserte un contenido
+        Solamente es lo que determina que se imprime en el caso que no se
+        inserte un contenido
         '''
         if isEpi:
             print("\x1b[1;31;40m     EXISTE EPISODIO \x1b[0m {}x{} --> {} : {} : {}".format(payload['Season'],payload['Episode'],payload['ParentId'],payload['Id'],payload['Title']))
         else:
             if currentItem == 0 and totalItems == 0:
                 if payload['Type'] == 'movie':
-                    print("\x1b[1;31;40m EXISTE PELICULA \x1b[0m {} : {}".format(payload['Id'],payload['CleanTitle']))
+                    print("\x1b[1;31;40m EXISTE PELICULA \x1b[0m {} : {}".format(payload['Id'],payload['Title']))
                 else:
                     print()
-                    print("\x1b[1;31;40m EXISTE SERIE \x1b[0m {} : {}".format(payload['Id'],payload['CleanTitle']))
+                    print("\x1b[1;31;40m EXISTE SERIE \x1b[0m {} : {}".format(
+                        payload['Id'], payload['Title']))
             else:
                 if payload['Type'] == 'movie':
-                    print("\x1b[1;31;40m {}/{} EXISTE PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['CleanTitle']))
+                    print("\x1b[1;31;40m {}/{} EXISTE PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
                 else:
                     print()
-                    print("\x1b[1;31;40m {}/{} EXISTE SERIE \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['CleanTitle']))
+                    print("\x1b[1;31;40m {}/{} EXISTE SERIE \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
 
-    def insertar(self, payload, listDB, listPayload, currentItem=0, totalItems=0, isEpi=False):
+    def insertar(self, payload, listDB, listPayload, currentItem=0, totalItems=0,
+                 isEpi=False):
         '''
         Este metodo se usa solo en _checkDBandAppend() NO usar en scripts!!!
         Checkea que el payload este bien con _dataChecker(), si esta bien lo inserta y si no, lo salta y aumenta el contador skippedTitles o skippedEpis
         '''
-        noInsertar = Datamanager._dataChecker(self,payload,isEpi)
-        if noInsertar == False:
+        noInsertar = Datamanager._dataChecker(self, payload, isEpi)
+        if not noInsertar:
             listPayload.append(payload)
             listDB.append(payload)
             if isEpi:
@@ -94,16 +111,16 @@ class Datamanager():
             else:
                 if currentItem == 0 and totalItems == 0:
                     if payload['Type'] == 'movie':
-                        print("\x1b[1;32;40m INSERT PELICULA \x1b[0m {} : {}".format(payload['Id'],payload['CleanTitle']))
+                        print("\x1b[1;32;40m INSERT PELICULA \x1b[0m {} : {}".format(payload['Id'], payload['Title']))
                     else:
                         print()
-                        print("\x1b[1;32;40m INSERT SERIE \x1b[0m {} : {}".format(payload['Id'],payload['CleanTitle']))
+                        print("\x1b[1;32;40m INSERT SERIE \x1b[0m {} : {}".format(payload['Id'],payload['Title']))
                 else:
                     if payload['Type'] == 'movie':
-                        print("\x1b[1;32;40m {}/{} INSERT PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['CleanTitle']))
+                        print("\x1b[1;32;40m {}/{} INSERT PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
                     else:
                         print()
-                        print("\x1b[1;32;40m {}/{} INSERT SERIE \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['CleanTitle']))
+                        print("\x1b[1;32;40m {}/{} INSERT SERIE \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
         else:
             if isEpi:
                 self.skippedEpis += 1
@@ -113,10 +130,11 @@ class Datamanager():
     def _dataChecker(self, payload, isEpi):
         '''
         NO usar este metodo en scripts!!!
-        Checkea la data de los payloads y la deja en None si esta mal y no es necesario o retorna noInsertar = True si hay que saltarlo.
+        Checkea la data de los payloads y la deja en None si esta mal y no es
+        necesario o retorna noInsertar = True si hay que saltarlo.
         '''
         noInsertar = False
-        if payload['Year'] != None:
+        if payload['Year']:
             if isinstance(payload['Year'], int):
                 if payload['Year'] > int(time.strftime("%Y")) or payload['Year'] < 1870:
                     payload['Year'] = None
@@ -127,17 +145,13 @@ class Datamanager():
                     if payload['Year'] > int(time.strftime("%Y")) or payload['Year'] < 1870:
                         payload['Year'] = None
                         print("\x1b[1;31;40m !!!AÑO INCORRECTO REEMPLAZADO POR NONE!!! \x1b[0m")
-                except:
+                except Exception:
                     payload['Year'] = None
                     print("\x1b[1;31;40m !!!AÑO TIPO INCORRECTO REEMPLAZADO POR NONE!!! \x1b[0m")
 
-        if payload['Title'] == None or payload['Title'] == '' or payload['Title'] == "":
+        if not payload['Title'] or payload['Title'] == '' or payload['Title'] == "":
             noInsertar = True
             print("\x1b[1;31;40m !!!TITULO VACIO!!! Skipping... \x1b[0m")
-
-        if payload['Packages'] == None or payload['Packages'] == '' or payload['Packages'] == "":
-            noInsertar = True
-            print("\x1b[1;31;40m !!!PACKAGES VACIOS!!! Skipping... \x1b[0m")
 
         if payload['Synopsis'] == "":
             payload['Synopsis'] = None
@@ -145,23 +159,11 @@ class Datamanager():
         if payload['Rating'] == "":
             payload['Rating'] = None
 
-        if payload['Duration'] == 0 or payload['Duration'] == "":
-            payload['Duration'] = None
+        if payload.get('Duration'):
+            if payload['Duration'] == 0 or payload['Duration'] == "":
+                payload['Duration'] = None
 
-        if payload['Availability'] == "":
-            payload['Availability'] = None
-
-        if isEpi == False:
-            try:
-                hola = payload['CleanTitle']
-
-                if payload['CleanTitle'] == "":
-                    noInsertar = True
-                    print("\x1b[1;31;40m !!!CLEANTITLE NO TIENE NADA!!! Skipping... \x1b[0m")
-            except:
-                noInsertar = True
-                print("\x1b[1;31;40m !!!CLEANTITLE NO EXISTE!!! Skipping... \x1b[0m")
-        else:
+        if isEpi:
             if payload['Episode'] == 0 or payload['Episode'] == "":
                 payload['Episode'] = None
 
@@ -176,7 +178,8 @@ class Datamanager():
             if currentItem == 0 and totalItems == 0:
                 print("\x1b[1;31;40m EXISTE \x1b[0m {}".format(ID))
             else:
-                print("\x1b[1;31;40m {}/{} EXISTE \x1b[0m {}".format(currentItem,totalItems,ID))
+                print("\x1b[1;31;40m {}/{} EXISTE \x1b[0m {}".format(
+                    currentItem, totalItems, ID))
             isPresent = True
         else:
             isPresent = False
@@ -189,7 +192,8 @@ class Datamanager():
             if currentItem == 0 and totalItems == 0:
                 print("EXISTE {}".format(Title))
             else:
-                print("{}/{} EXISTE {}".format(currentItem,totalItems,Title))
+                print("{}/{} EXISTE {}".format(
+                    currentItem, totalItems, Title))
             isPresent = True
         else:
             isPresent = False
@@ -201,7 +205,7 @@ class Datamanager():
         try:
             hola = data[key]
             existe = True
-        except:
+        except Exception:
             existe = False
 
         return existe
@@ -216,11 +220,13 @@ class Datamanager():
             print("\x1b[1;33;40m SKIPPED {} PELICULAS/SERIES \x1b[0m".format(self.skippedTitles))
             listPayload.clear()
 
-
-    def _getJSON(self, URL, headers=None, data=None, json=None, showURL=True, usePOST=False, timeOut=0):
+    def _getJSON(self, URL, headers=None, data=None, json=None, showURL=True,
+                 usePOST=False, timeOut=0):
         '''
-        Devuelve un JSON con el contenido de la URL solicitada, se le pueden pasar headers o payloads si es necesario
-        usePOST determina si se va a usar POST para la request, por defecto False.
+        Devuelve un JSON con el contenido de la URL solicitada, se le pueden
+        pasar headers o payloads si es necesario
+        usePOST determina si se va a usar POST para la request, por defecto
+        False.
         '''
         tryNumber = 0
         while tryNumber <= 10:
@@ -234,19 +240,22 @@ class Datamanager():
                 time.sleep(timeOut)
 
                 if usePOST:
-                    content = self.sesion.post(URL,headers=headers,data=data,json=json)
+                    content = self.sesion.post(
+                        URL, headers=headers, data=data, json=json)
                 else:
-                    content = self.sesion.get(URL,headers=headers)
+                    content = self.sesion.get(
+                        URL, headers=headers)
 
-                if showURL == True:
-                    print("\x1b[1;33;40m STATUS {} URL: \x1b[0m{}".format(content.status_code,URL))
+                if showURL:
+                    print("\x1b[1;33;40m STATUS {} URL: \x1b[0m{}".format(
+                        content.status_code, URL))
 
                 jsonData = content.json()
                 tryNumber = 11
 
             except requests.exceptions.ConnectionError as e:
                 print(repr(e))
-                print("\x1b[1;37;41m",URL,"\x1b[0m")
+                print("\x1b[1;37;41m", URL,"\x1b[0m")
                 print("\x1b[1;37;41m La conexion fallo, reintentando... (Intento #{})\x1b[0m".format(tryNumber))
 
                 tryNumber += 1

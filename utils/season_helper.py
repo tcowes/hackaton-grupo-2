@@ -97,7 +97,7 @@ class SeasonHelper():
 
     @staticmethod
     def get_deeplink(episodes):
-        return episodes[0]['Deeplinks']['Web']
+        return episodes[0]['Deeplink']
 
     @staticmethod
     def get_id(episodes):

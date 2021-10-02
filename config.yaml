@@ -4,6 +4,9 @@ mongo:
     top_ten_hackaton: hackatonTopTen
     # top_ten_hackaton_epi: hackatonTopTenEpisodes
 ott_sites:
+  StarPlus:
+    countries:
+      AR:
   HBOMax:
     countries:
       AR:

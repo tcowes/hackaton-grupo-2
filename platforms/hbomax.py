@@ -5,7 +5,6 @@ from datetime import datetime
 from common import config
 from utils.mongo import mongo
 from utils.payload import Payload
-from utils.replace import _replace
 from utils.season_helper import SeasonHelper
 from utils.datamanager import Datamanager, RequestsUtils
 
@@ -250,8 +249,6 @@ class HBOMax():
             payload_epi = self.build_payload(epi_dict)
             # Si la serie es original sus episodios también
             payload_epi.is_original = serie_data.is_original
-            # Y también comparten provider
-            payload_epi.provider = serie_data.provider
             episodes_data.append(payload_epi)
             payload_epi = payload_epi.payload_episode()
             Datamanager._checkDBandAppend(
@@ -311,7 +308,6 @@ class HBOMax():
         """
         payload = Payload()
         payload.title = content['Title']
-        payload.clean_title = _replace(payload.title)
         payload.id = self.get_clean_id(content['Id'])
         payload.is_original = payload.id in self.ids_originals
 
@@ -323,15 +319,10 @@ class HBOMax():
         payload.rating = self.get_rating(json, type_)
         payload.images = self.get_images(json, type_)
         payload.synopsis = self.get_synopsis(json, type_)
-        payload.packages = self.get_packages(json, type_)
         payload.cast = self.get_cast(json, type_)
         payload.directors = self.get_directors(json, type_)
         payload.crew = self.get_crew(json, type_)
-        payload.availability = self.get_availability(json, type_)
         payload.deeplink_web = self.get_deeplink(payload.id, type_)
-        payload.providers = self.get_providers(json, type_)
-        payload.is_branded = self.get_is_branded(json, type_)
-        payload.createdAt = self._created_at
         payload.platform_country = self.country_code
         payload.platform_name = self.name
 
@@ -444,16 +435,6 @@ class HBOMax():
             synopsis = json['Synopsis']
         return synopsis.replace('\n', '')
 
-    def get_packages(self, json, type_):
-        is_free = False
-        if type_ == 'movie':
-            is_free = json[-1]['body']['isFree']
-        elif type_ == 'serie':
-            is_free = False  # se valida de otra forma!
-        elif type_ == 'episode':
-            is_free = json['isFree']
-        return [{'Type': 'free-vod'}] if is_free else [{'Type': 'subscription-vod'}]
-
     def get_cast(self, json, type_):
         cast = []
         if type_ == 'movie':
@@ -490,14 +471,6 @@ class HBOMax():
                             directors.append(person['value'])
         return directors if directors else None
 
-    def get_availability(self, json, type_):
-        if type_ == 'movie':
-            endtime = json[-1]['body']['endDate'] // 1000
-            return str(datetime.fromtimestamp(endtime))
-        else:
-            # Series y episodios no traen availability en esta plataforma.
-            return None
-
     def get_deeplink(self, clean_id, type_):
         if type_ == 'movie':
             slug = f'urn:hbo:page:{clean_id}:type:feature'
@@ -527,24 +500,6 @@ class HBOMax():
                     crew.append(
                         {'Role': person['label'], 'Name': person['value']})
         return crew if crew else None
-
-    def get_providers(self, json, type_):
-        if type_ == 'movie':
-            provider = json[-1]['body']['displayBrand']
-            return [provider] if provider != '' else None
-        elif type_ == 'serie':
-            provider = json['body']['details'].get('attributionIcon')
-            return [provider['alternateText']] if provider else None
-
-    def get_is_branded(self, json, type_):
-        brand = logo = None
-        if type_ == 'movie':
-            logo = json[-1]['body'].get('attributionIcon')
-        elif type_ == 'serie':
-            logo = json['body']['details'].get('attributionIcon')
-        if logo:
-            brand = logo['alternateText']
-        return brand == 'Max Originals'
 
     def get_episode(self, json):
         return json['SeasonAndNumber']['hadron-legacy-telemetry']['episodeNumber']
@@ -619,11 +574,4 @@ class HBOMax():
             for season in seasons:
                 if season['Number'] == 1:
                     serie_payload.year = season['Year']
-
-        # Packages:
-        packages = []
-        for episode in episodes:
-            if episode.packages[0] not in packages:
-                packages.append(episode.packages[0])
-        serie_payload.packages = packages
         serie_payload.seasons = seasons
