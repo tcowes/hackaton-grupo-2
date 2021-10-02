@@ -7,29 +7,16 @@ class Payload:
                  platform_country=None,
                  id_=None,
                  title=None,
-                 original_title=None,
-                 clean_title=None,
                  year=None,
                  duration=None,
                  deeplink_web=None,
-                 deeplink_android=None,
-                 deeplink_ios=None,
-                 playback=None,
                  synopsis=None,
                  image=None,
                  rating=None,
-                 provider=None,
-                 external_ids=None,
                  genres=None,
-                 cast=None,
-                 directors=None,
-                 availability=None,
-                 download=None,
+                 cast=None,  # ver
+                 directors=None,  # ver
                  is_original=None,
-                 is_branded=None,
-                 is_adult=None,
-                 packages=None,
-                 country=None,
                  episodes=None,
                  parent_id=None,
                  parent_title=None,
@@ -37,39 +24,23 @@ class Payload:
                  season=None,
                  seasons=None,
                  number=None,
-                 createdAt=None,
-                 crew=None):
+                 crew=None):  # ver
         self._platformName = platform_name
         self._platformCountry = platform_country
         self._id = id_
         self._title = title
-        self._original_title = original_title
-        self._clean_title = clean_title
         self._year = year
         self._duration = duration
         self._deeplink_web = deeplink_web
-        self._deeplink_android = deeplink_android
-        self._deeplink_ios = deeplink_ios
-        self._playback = playback
         self._synopsis = synopsis
         self._image = image
         self._rating = rating
-        self._provider = provider
-        self._external_ids = external_ids
         self._genres = genres
         self._cast = cast
         self._directors = directors
-        self._availability = availability
-        self._download = download
         self._is_original = is_original
-        self._is_branded = is_branded
-        self._is_adult = is_adult
-        self._packages = packages
-        self._country = country
-        # self._timestamp = timestamp
         self._timestamp = datetime.now().isoformat()
         self._episodes = episodes
-        self._created_at = createdAt
         self._parent_id = parent_id
         self._parent_title = parent_title
         self._episode = episode
@@ -103,14 +74,6 @@ class Payload:
         self._id = new_id
 
     @property
-    def clean_title(self):
-        return self._clean_title
-
-    @clean_title.setter
-    def clean_title(self, new_title):
-        self._clean_title = new_title
-
-    @property
     def title(self):
         return self._title
 
@@ -118,14 +81,6 @@ class Payload:
     def title(self, new_title):
         self.clean_title = _replace(new_title)
         self._title = new_title
-
-    @property
-    def original_title(self):
-        return self._original_title
-
-    @original_title.setter
-    def original_title(self, new_title):
-        self._original_title = new_title
 
     @property
     def year(self):
@@ -152,30 +107,6 @@ class Payload:
         self._deeplink_web = new_deeplink_web
 
     @property
-    def deeplink_android(self):
-        return self._deeplink_android
-
-    @deeplink_android.setter
-    def deeplink_android(self, new_deeplink_android):
-        self._deeplink_android = new_deeplink_android
-
-    @property
-    def deeplink_ios(self):
-        return self._deeplink_ios
-
-    @deeplink_ios.setter
-    def deeplink_ios(self, new_deeplink_ios):
-        self._deeplink_ios = new_deeplink_ios
-
-    @property
-    def playback(self):
-        return self._playback
-
-    @playback.setter
-    def playback(self, new_playback):
-        self._playback = new_playback
-
-    @property
     def synopsis(self):
         return self._synopsis
 
@@ -198,22 +129,6 @@ class Payload:
     @rating.setter
     def rating(self, new_rating):
         self._rating = new_rating
-
-    @property
-    def provider(self):
-        return self._provider
-
-    @provider.setter
-    def provider(self, new_provider):
-        self._provider = new_provider
-
-    @property
-    def external_ids(self):
-        return self._external_ids
-
-    @external_ids.setter
-    def external_ids(self, new_external_ids):
-        self._external_ids = new_external_ids
 
     @property
     def genres(self):
@@ -248,64 +163,12 @@ class Payload:
         self._crew = new_crew
 
     @property
-    def availability(self):
-        return self._availability
-
-    @availability.setter
-    def availability(self, new_availability):
-        self._availability = new_availability
-
-    @property
-    def download(self):
-        return self._download
-
-    @download.setter
-    def download(self, new_download):
-        self._download = new_download
-
-    @property
     def is_original(self):
         return self._is_original
 
     @is_original.setter
     def is_original(self, new_is_original):
         self._is_original = new_is_original
-
-    @property
-    def is_branded(self):
-        return self._is_branded
-
-    @is_branded.setter
-    def is_branded(self, new_is_branded):
-        self._is_branded = new_is_branded
-
-    @property
-    def is_adult(self):
-        return self._is_adult
-
-    @is_adult.setter
-    def is_adult(self, new_is_adult):
-        self._is_adult = new_is_adult
-
-    @property
-    def packages(self):
-        return self._packages
-
-    @packages.setter
-    def packages(self, new_packages):
-        self._packages = new_packages
-
-    @property
-    def country(self):
-        return self._country
-
-    @country.setter
-    def country(self, new_country):
-        self._country = new_country
-
-    @property
-    def timestamp(self):
-        return self._timestamp
 
     @property
     def parent_id(self):
@@ -362,14 +225,6 @@ class Payload:
     # ---------------------------------- #
 
     @property
-    def createdAt(self):
-        return self._created_at
-
-    @createdAt.setter
-    def createdAt(self, new_created_at):
-        self._created_at = new_created_at
-
-    @property
     def episodes(self):
         return self._episodes
 
@@ -383,35 +238,18 @@ class Payload:
             'PlatformCountry': self._platformCountry,
             'Id': self._id,
             'Title': self._title,
-            'OriginalTitle': self._original_title,
-            'CleanTitle': self._clean_title,
             'Type': 'movie',
             'Year': self._year,
             'Duration': self._duration,
-            'Deeplinks': {
-                'Web': self._deeplink_web,
-                'Android': self._deeplink_android,
-                'iOS': self._deeplink_ios
-            },
-            'Playback': self._playback,
+            'Deeplink': self._deeplink_web,
             'Synopsis': self._synopsis,
             'Image': self._image,
             'Rating': self._rating,
-            'Provider': self._provider,
-            'ExternalIds': self._external_ids,
             'Genres': self._genres,
             'Cast': self._cast,
             'Directors': self._directors,
             'Crew': self._crew,
-            'Availability': self._availability,
-            'Download': self._download,
             'IsOriginal': self._is_original,
-            'IsAdult': self._is_adult,
-            'IsBranded': self._is_branded,
-            'Packages': self._packages,
-            'Country': self._country,
-            'Timestamp': self._timestamp,
-            'CreatedAt': self._created_at
         }
 
     def payload_serie(self):
@@ -420,50 +258,27 @@ class Payload:
             'PlatformCountry': self._platformCountry,
             'Id': self._id,
             'Title': self._title,
-            'OriginalTitle': self._original_title,
-            'CleanTitle': self._clean_title,
             'Type': 'serie',
             'Year': self._year,
-            'Duration': self._duration,
-            'Deeplinks': {
-                'Web': self._deeplink_web,
-                'Android': self._deeplink_android,
-                'iOS': self._deeplink_ios,
-            },
             'Seasons': self._seasons,
-            'Playback': self._playback,
+            'Deeplink': self._deeplink_web,
             'Synopsis': self._synopsis,
             'Image': self._image,
             'Rating': self._rating,
-            'Provider': self._provider,
-            'ExternalIds': self._external_ids,
             'Genres': self._genres,
             'Cast': self._cast,
             'Directors': self._directors,
             'Crew': self._crew,
-            'Availability': self._availability,
-            'Download': self._download,
             'IsOriginal': self._is_original,
-            'IsBranded': self._is_branded,
-            'IsAdult': self._is_adult,
-            'Packages': self._packages,
-            'Country': self._country,
-            'Timestamp': self._timestamp,
-            'CreatedAt': self._created_at
         }
 
     def payload_season(self):
         return {
             'Id': self._id,
-            'Synopsis': self._synopsis,
             'Title': self._title,
             'Deeplink': self._deeplink_web,
             'Number': self._number,
-            'Image': self._image,
-            'Directors': self._directors,
-            'Cast': self._cast,
             'Episodes': self._episodes,
-            'IsOriginal': self._is_original,
             'Year': self._year
         }
 
@@ -478,25 +293,12 @@ class Payload:
             'Year': self.year,
             'Image': self._image,
             'Duration': self.duration,
-            'Deeplinks': {
-                'Web': self.deeplink_web,
-                'Android': self.deeplink_android,
-                'iOS': self._deeplink_ios
-            },
+            'Deeplink': self.deeplink_web,
             'Synopsis': self.synopsis,
             'Rating': self.rating,
-            'Provider': self.provider,
-            'ExternalIds': self._external_ids,
             'Genres': self.genres,
             'Cast': self.cast,
             'Directors': self.directors,
             'Crew': self.crew,
-            'Availability': self.availability,
-            'Download': self.download,
             'IsOriginal': self._is_original,
-            'IsAdult': self._is_adult,
-            'Country': self.country,
-            'Packages': self.packages,
-            'Timestamp': self.timestamp,
-            'CreatedAt': self._created_at
         }
