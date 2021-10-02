@@ -83,6 +83,9 @@ class StarPlus():
 
         Datamanager._insertIntoDB(self, self.payloads, self.database)
 
+        self.sesion.close()
+        self.driver.quit()
+
     def scrap_movies(self):
         ''' Extracts all movies data '''
         WebDriverWait(self.driver, 60).until(
@@ -152,7 +155,7 @@ class StarPlus():
 
                 self.driver.execute_script("window.history.go(-1)")
                 time.sleep(4)
-                counter = 1
+                counter += 1
             except ElementClickInterceptedException:
                 self.driver.find_element_by_css_selector(
                         "button[class='sc-iiUIRa iXgoSW slick-arrow slick-next']").click()
