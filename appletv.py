@@ -144,27 +144,31 @@ class AppleTV():
                                 continue
                             else:
                                 scraped.append(epi['id'])
+                            ### ### ### ### ### ### ### ### ### ###
+                            
+                            try:             
+                                _timestamp = epi['releaseDate']
+                                _timestamp = str(_timestamp)
+                                _timestamp = _timestamp[:-3]
+                                _timestamp = int(_timestamp)
+                                year = date.fromtimestamp(_timestamp)
+                                year = str(year)
+                                year = year.split('-')
+                                year = int(year[0])
+                                if year < 1870 or year > datetime.now().year:
+                                    year = None
+                            except:
+                                year = None
 
                             if epi['seasonNumber'] not in [ s["Number"] for s in seasons]:
                                 season_episodes[str(epi['seasonNumber'])] = 1
-                                seasons_ids[str(epi['seasonNumber'])] = {'episode_number': epi['episodeNumber'], 'id': epi['id'], 'synopsis':epi['description']}
-                                seasons_year[str(epi['seasonNumber'])] = year
-                                seasons.append({'Title': "{}: Season {}".format(epi['showTitle'] ,epi['seasonNumber']), "Number": epi['seasonNumber'],
-                                                'Image':None,'Directors':None,'Cast':None, 'Is_original':None  })
+                                seasons.append({'Title': "{}: Season {}".format(epi['showTitle'] ,epi['seasonNumber']), "Number": epi['seasonNumber']})
                             else:
-                                if seasons_year[str(epi['seasonNumber'])] > year:
-                                    seasons_year[str(epi['seasonNumber'])] = year
-                                if seasons_ids[str(epi['seasonNumber'])]['episode_number'] > epi['episodeNumber']:
-                                    seasons_ids[str(epi['seasonNumber'])]['id'] = epi['id']
-                                    seasons_ids[str(epi['seasonNumber'])]['synopsis'] = epi['description']
                                 season_episodes[str(epi['seasonNumber'])] += 1
                                 
                     epiTotal = len(epidata['data']['episodes'])
                                 
                     for season in seasons:
-                        season['Id'] = seasons_ids[str(epi['seasonNumber'])]['id']
-                        season['Synopsis'] = seasons_ids[str(epi['seasonNumber'])]['synopsis']
-                        season['Year'] = seasons_year[str(season['Number'])]
                         season['Episodes'] = season_episodes[str(epi['seasonNumber'])]
                         
                     if epiTotal == 50:
@@ -241,7 +245,6 @@ class AppleTV():
                         "cast": cast,
                         "directors": directors,
                         "is_original": is_original,
-                        "episodes": epiTotal,
                         "seasons": seasons,
                         "crew": crew
                 }
