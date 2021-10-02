@@ -43,8 +43,7 @@ class StarPlus():
         # urls:
         self.url = 'https://www.starplus.com'
         # generic:
-        self._platform_code = self._config['countries'][ott_site_country]
-        self._created_at = time.strftime("%Y-%m-%d")
+        self.name = ott_site_uid
         self.country_code = ott_site_country
         self.name = ott_site_uid
         self.mongo = mongo()
@@ -110,6 +109,8 @@ class StarPlus():
                         EC.element_to_be_clickable(
                         (By.XPATH, "//div[@aria-selected='details']"))).click()
                 content = Payload()
+                content.platform_name = self.name
+                content.platform_country = self.country_code
                 content.id = self.driver.current_url.split('/')[-1]
                 content.title = self.driver.find_element_by_css_selector(
                         "h1[class='h3 padding--bottom-6 padding--right-6 text-color--primary']").text
