@@ -1,11 +1,11 @@
 from datetime import *
 import time
-from os import system
+import json
+from common import config
 import requests
-import pymongo
-from selenium.webdriver.common import keys 
-#from mongo.connection import MongoDB
-import simplejson as json
+#from selenium.webdriver.common import keys 
+from utils.mongo import mongo
+from utils.datamanager import Datamanager
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,18 +14,33 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 class AppleTV():
-    def __init__(self):
+    def __init__(self, ott_site_uid, ott_site_country, type):
+        self._config = config()['ott_sites'][ott_site_uid]
+        # generic:
+        self.country_code = ott_site_country
+        self.name = ott_site_uid
+        self.mongo = mongo()
+        self.sesion = requests.session()
+        # bbdd:
         #self.db = MongoDB()
         self.start_url = 'https://tv.apple.com/hh'
         self.main_url = 'https://tv.apple.com/'
+        # bbdd:
+        self.collections = config()['mongo']['collections']
+        self.database = self.collections['top_ten_hackaton']
+        # lists
+        self.content = []
+        self.scraped = []
+        self.skippedTitles = 0
+        self.skippedEpis = 0
+        
         options = webdriver.ChromeOptions()
-        #options.add_argument("--headless")
-        #options.add_argument("--disable-gpu")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.currentSession = requests.session()
         self.driver = webdriver.Chrome(options=options)
         self.driver.maximize_window()
         self.scraping()
+        
         
     def scraping(self):
         countries = self.get_countries_codes()
@@ -230,43 +245,44 @@ class AppleTV():
                     else:
                         section = "Top 10 Series"
                     payload = {
-                        "platform.name": "AppleTV",
-                        "platform.country": element["Country"],
-                        "id": element["Id"],
-                        "title": data['data']['content']['title'],
-                        "section": section,
-                        "year": year,
-                        "deeplink_web": deeplink,
-                        "synopsis": synopsis,
-                        "image": imageL,
-                        "rating": rating,
-                        "genres": genres,
-                        "cast": cast,
-                        "directors": directors,
-                        "is_original": is_original,
-                        "seasons": seasons,
-                        "crew": crew
+                        "PlatformName": "AppleTV",
+                        "PlatformCountry": element["Country"],
+                        "Id": element["Id"],
+                        "Title": data['data']['content']['title'],
+                        "Section": section,
+                        "Year": year,
+                        "DeeplinkWeb": deeplink,
+                        "Synopsis": synopsis,
+                        "Image": imageL,
+                        "Rating": rating,
+                        "Genres": genres,
+                        "Cast": cast,
+                        "Directors": directors,
+                        "IsOriginal": is_original,
+                        "Seasons": seasons,
+                        "Crew": crew
                 }
             else:
                 payload = {
-                        "platform.name": "AppleTV",
-                        "platform.country": element["Country"],
-                        "id": element["Id"],
-                        "title": data['data']['content']['title'],
-                        "section": "Top 10 Movies",
-                        "year": year,
-                        "duration": duration,
-                        "deeplink_web": deeplink,
-                        "synopsis": synopsis,
-                        "image": imageL,
-                        "rating": rating,
-                        "genres": genres,
-                        "cast": cast,
-                        "directors": directors,
-                        "is_original": is_original,
-                        "crew": crew
+                        "PlatformName": "AppleTV",
+                        "PlatformCountry": element["Country"],
+                        "Id": element["Id"],
+                        "Title": data['data']['content']['title'],
+                        "Section": "Top 10 Movies",
+                        "Year": year,
+                        "Duration": duration,
+                        "DeeplinkWeb": deeplink,
+                        "Synopsis": synopsis,
+                        "Image": imageL,
+                        "Rating": rating,
+                        "Genres": genres,
+                        "Cast": cast,
+                        "Directors": directors,
+                        "IsOriginal": is_original,
+                        "Crew": crew
                 }
             
+            # Top 10 Series
             if element["Category"] == "ember52":
                 drama_series.append(payload)
             elif element["Category"] == "ember59":
@@ -275,10 +291,12 @@ class AppleTV():
             elif element["Category"] == "ember71":
                 if nofi_series == []:
                     nofi_series.append(payload)
-                    
+            
+            # Top 10 Movies
             if element["Category"] == "ember65":
                 movies.append(payload)
                 
+            # Top 10 Kids    
             if element["Category"] == "ember77":
                 kids.append(payload)
 
@@ -287,7 +305,9 @@ class AppleTV():
         print("total series", str(len(total_series)))
         print("total movies", str(len(movies)))
         print("kids", str(len(kids)))
-        insertar total series        
+        Datamanager._insertIntoDB(self, total_series, self.database)
+        Datamanager._insertIntoDB(self, movies, self.database)
+        Datamanager._insertIntoDB(self, kids, self.database)
                         
     def get_countries_codes(self):
         countries = []

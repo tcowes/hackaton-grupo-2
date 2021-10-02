@@ -1,4 +1,3 @@
-from os import EX_PROTOCOL
 import time
 import logging
 import requests
