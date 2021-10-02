@@ -6,8 +6,10 @@ from common import config
 from utils.mongo import mongo
 # from datetime import datetime
 from selenium import webdriver
+from utils.payload import Payload
 from pyvirtualdisplay import Display
-from selenium.webdriver.common.by import By       
+from utils.datamanager import Datamanager      
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 # from selenium.webdriver.common.action_chains import ActionChains
@@ -79,6 +81,8 @@ class StarPlus():
         self.scrap_movies()
         #self.scrap_series()
 
+        Datamanager._insertIntoDB(self, self.payloads, self.database)
+
     def scrap_movies(self):
         ''' Extracts all movies data '''
         WebDriverWait(self.driver, 60).until(
@@ -88,8 +92,7 @@ class StarPlus():
         principal = self.driver.find_element_by_css_selector(
                     "div[class='sc-hgRTRy jrzXWb']").find_elements_by_css_selector(
                     "a[class='sc-EHOje WxEV basic-card skipToContentTarget']")
-        movies = []
-        total = len(principal)
+        # total = len(principal)
         counter = 0
         while True:
             if counter > 9:
@@ -103,49 +106,49 @@ class StarPlus():
                 WebDriverWait(self.driver, 60).until(
                         EC.element_to_be_clickable(
                         (By.XPATH, "//div[@aria-selected='details']"))).click()
-                content = {}
-                content['id'] = self.driver.current_url.split('/')[-1]
-                content['title'] = self.driver.find_element_by_css_selector(
+                content = Payload()
+                content.id = self.driver.current_url.split('/')[-1]
+                content.title = self.driver.find_element_by_css_selector(
                         "h1[class='h3 padding--bottom-6 padding--right-6 text-color--primary']").text
-                content['url'] = self.driver.current_url
-                content['image'] = self.driver.find_element_by_css_selector(
-                        "div[class='sc-dRaagA jNrEQj']").find_element_by_tag_name('img').get_attribute('src')
-                content['type'] = 'movie'
-                content['synopsis'] = self.driver.find_element_by_css_selector(
+                content.deeplink_web = self.driver.current_url
+                content.image = [self.driver.find_element_by_css_selector(
+                        "div[class='sc-dRaagA jNrEQj']").find_element_by_tag_name('img').get_attribute('src')]
+                content.synopsis = self.driver.find_element_by_css_selector(
                         "p[class='margin--0 body-copy body-copy--large text-color--primary']").text
                 pre_data = self.driver.find_elements_by_css_selector(
                         "div[class='sc-bTiqRo eqCABb']")
                 try:
-                    content['duration'] = pre_data[0].find_element_by_css_selector(
+                    content.duration = pre_data[0].find_element_by_css_selector(
                         "p[class='body-copy margin--0 text-color--primary']").text
                 except IndexError:
-                    content['duration'] = None
+                    content.duration = None
                 try:
-                    content['year'] = pre_data[1].find_element_by_css_selector(
+                    content.year = pre_data[1].find_element_by_css_selector(
                         "p[class='body-copy margin--0 text-color--primary']").text
                 except IndexError:
-                    content['year'] = None
+                    content.year = None
                 try:
-                    content['genres'] = pre_data[2].find_element_by_css_selector(
+                    content.genres = pre_data[2].find_element_by_css_selector(
                         "p[class='body-copy margin--0 text-color--primary']").text
                 except IndexError:
-                    content['genres'] = None
+                    content.genres = None
                 directors_cast = self.driver.find_elements_by_css_selector(
                         "div[class='sc-blIhvV bgYJdh']")
                 try:
                     names = directors_cast[0].find_elements_by_css_selector(
                         "p[class='body-copy margin--0 text-color--primary']")
-                    content['directors'] = [name.text for name in names]
+                    content.directors = [name.text for name in names]
                 except IndexError:
-                    content['directors'] = None
+                    content.directors = None
                 try:
                     names = directors_cast[1].find_elements_by_css_selector(
                         "p[class='body-copy margin--0 text-color--primary']")
-                    content['cast'] = [name.text for name in names]
+                    content.cast = [name.text for name in names]
                 except IndexError:
-                    content['cast'] = None
-                movies.append(content)
-                print(content)
+                    content.cast = None
+                Datamanager._checkDBandAppend(
+                    self, content.payload_movie(), self.scraped, self.payloads
+                )
 
                 self.driver.execute_script("window.history.go(-1)")
                 time.sleep(4)
