@@ -61,17 +61,17 @@ class HBOMax():
 
     def _scraping(self):
 
-        sections_ids = (
-            'urn:hbo:tray:Ih5zk_5MKc9dbHP-IyOjO',  # Movies
-            'urn:hbo:tray:fYZFVXDBbYrKbaf_ZAlsF',  # Series
-            'urn:hbo:tray:wBNZilMZVN3CW82FRYp2A'  # Kids
-        )
+        sections_ids = {
+            'Top 10 Movies': 'urn:hbo:tray:Ih5zk_5MKc9dbHP-IyOjO',  # Movies
+            'Top 10 Series': 'urn:hbo:tray:fYZFVXDBbYrKbaf_ZAlsF',  # Series
+            'Top 10 Kids': 'urn:hbo:tray:wBNZilMZVN3CW82FRYp2A'  # Kids
+        }
 
         self.get_originals()
 
         for section in sections_ids:
             url = self.section_api.format(
-                section=section,
+                section=sections_ids[section],
                 country=self.country_code
             )
             data = Datamanager._getJSON(self, url)
@@ -88,6 +88,7 @@ class HBOMax():
                     prepayload = self.prescraping_serie(content_data)
                 else:
                     prepayload = self.prescraping_movie(content_data)
+                prepayload['Section'] = section
                 self.prepayloads.append(prepayload)
 
         for item in self.prepayloads:
@@ -310,6 +311,7 @@ class HBOMax():
         payload.title = content['Title']
         payload.id = self.get_clean_id(content['Id'])
         payload.is_original = payload.id in self.ids_originals
+        payload.section = content.get('Section')
 
         type_ = content['Type']
         json = content['JSON']
