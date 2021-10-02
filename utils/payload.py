@@ -5,6 +5,7 @@ from utils.replace import _replace
 class Payload:
     def __init__(self, platform_name=None,
                  platform_country=None,
+                 section=None,
                  id_=None,
                  title=None,
                  year=None,
@@ -27,6 +28,7 @@ class Payload:
                  crew=None):  # ver
         self._platformName = platform_name
         self._platformCountry = platform_country
+        self._section = section
         self._id = id_
         self._title = title
         self._year = year
@@ -48,6 +50,14 @@ class Payload:
         self._seasons = seasons
         self._number = number
         self._crew = crew
+
+    @property
+    def section(self):
+        return self._section
+
+    @section.setter
+    def section(self, section):
+        self._section = section
 
     @property
     def platform_name(self):
@@ -236,6 +246,7 @@ class Payload:
         return {
             'PlatformName': self._platformName,
             'PlatformCountry': self._platformCountry,
+            'Section': self._section,
             'Id': self._id,
             'Title': self._title,
             'Type': 'Content',
@@ -256,6 +267,7 @@ class Payload:
         return {
             'PlatformName': self._platformName,
             'PlatformCountry': self._platformCountry,
+            'Section': self._section,
             'Id': self._id,
             'Title': self._title,
             'Type': 'serie',
