@@ -33,11 +33,15 @@ class Netflix():
             for content in content:
                 print(content)
 
-        self.driver.get(self.kids_url)
+        WebDriverWait(self.driver, 60).until(
+                        EC.element_to_be_clickable((By.XPATH, "//div[@class='previewModal-close']"))).click()
+        kids = self.driver.find_element_by_xpath("//a[@href='/Kids']")
+        self.driver.execute_script("arguments[0].click();", kids)
+        
         time.sleep(4)
         ids = self.extract_ids()
         if not ids:
-            raise AssertionError('--- NO PUDIERON SCRAPEARSE IDS MOST WATCHED ---')
+            raise AssertionError('--- NO PUDIERON SCRAPEARSE IDS KIDS MOST WATCHED ---')
         else:
             content = self.extract_data(ids)
             for content in content:
@@ -86,6 +90,21 @@ class Netflix():
                     "p[class='preview-modal-synopsis previewModal--text']").text
             content['rating'] = self.driver.find_element_by_css_selector(
                     "span[class='maturity-number']").text
+            try:
+                episode_selector = self.driver.find_element_by_css_selector(
+                    "div[class='episodeSelector-dropdown']").click()
+                episode_selector.find_element_by_css_selector(
+                    "button[class='dropdown-toggle ltr-111bn9j']").click()
+                dropdown = episode_selector.find_elements_by_css_selector(
+                    "li[data-uia='dropdown-menu-item']")
+                content['seasons'] = []
+                for data in dropdown:
+                    content['seasons'].append({'Season': data.find_element_by_css_selector(
+                    "div[class='episodeSelector--option']").text, 'Episodes': data.find_element_by_css_selector(
+                    "span[class='episodeSelector--option-label-numEpisodes']").text})
+            except:
+                # ACA QUEDE TOMIIIIIIIIII
+                pass
             try:
                 content['duration'] = self.driver.find_element_by_css_selector(
                     "span[class='duration']").text
@@ -200,9 +219,9 @@ class Netflix():
             WebDriverWait(self.driver, 60).until(
                         EC.element_to_be_clickable((By.XPATH, "//a[@href='/login']"))).click()
             WebDriverWait(self.driver, 60).until(
-                        EC.presence_of_element_located((By.XPATH, "//input[@id='id_userLoginId']"))).send_keys('augustomontero1154@gmail.com')
+                        EC.presence_of_element_located((By.XPATH, "//input[@id='id_userLoginId']"))).send_keys('julietanavarro1154@gmail.com')
             WebDriverWait(self.driver, 60).until(
-                        EC.presence_of_element_located((By.XPATH, "//input[@id='id_password']"))).send_keys('darwin1154')
+                        EC.presence_of_element_located((By.XPATH, "//input[@id='id_password']"))).send_keys('darwin1154*')
             WebDriverWait(self.driver, 60).until(
                         EC.element_to_be_clickable((By.XPATH, "//button[@data-uia='login-submit-button']"))).click()
             WebDriverWait(self.driver, 60).until(
