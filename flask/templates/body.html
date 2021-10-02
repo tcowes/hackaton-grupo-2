@@ -1,0 +1,45 @@
+{% block content %}
+    <div class="row no-gutters">
+    <div class="col-md-4">
+        <svg class="bd-placeholder-img" width="100%" height="250" xmlns="http://www.w3.org/2000/svg" aria-label="Placeholder: Image" 
+        preserveAspectRatio="xMidYMid slice" role="img" style="background-image: url(/static/images/bb.png); background-size: contain;background-repeat:no-repeat"></svg>
+    </div>
+    <div class="col-md-8">
+        <div class="card-body">
+        <h2 class="card-title">{{ d['Title'] }}</h3>
+        <h4 class="card-title">{{ d['PlatformName'] }} {{ d['PlatformCountry'] }}</h4>
+        <h5 class="card-title">{{ d['Type'].capitalize() }}</h5>
+        <p class="card-text">{{ d['Synopsis'] }}</p>
+        <button class="btn btn-secondary col-md-2 justify-content-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+            More Info
+        </button>
+        </div>
+    </div>
+    <div class="collapse mt-3" id="collapseExample">
+        <div class="col-md-12 col-sm-12 text-center">
+            <div class="card-body">
+            <h2 class="card-title">{{ d['Title'] }}</h3>
+            <h4 class="card-title">{{ d['PlatformName'] }} {{ d['PlatformCountry'] }}</h4>
+            <h5 class="card-title">{{ d['Type'].capitalize() }}</h5>
+            <h6>{{ d['Year'] }} Duration: {{ d['Duration'] }}</h6>
+            <h6>{{ d['Genres'] }}</h6>
+            <p class="card-text">{{ d['Synopsis'] }}</p>
+            {% if d['Directors'] %}
+                Directors: 
+                {% for name in d['Directors'] %}
+                    <h6>{{ name }}</h6>
+                {% endfor %}
+            {% endif %}
+            {% if d['Cast'] %}
+                Cast: 
+                {% for name in d['Cast'] %}
+                    <h6>{{ name }}</h6>
+                {% endfor %}
+            {% endif %}
+            </div>
+            <p class="card-text mb-2 mt-2"><small class="text-muted">Powered by BB-vision</small></p>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

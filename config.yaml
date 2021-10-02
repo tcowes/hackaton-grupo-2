@@ -20,4 +20,50 @@ ott_sites:
   AppleTV:
     countries:
       ALL: 'https://tv.apple.com/'
-
+  Amazon:
+    countries:
+      LATAM: "amazon-prime-video"
+      MX: "mx.amazonprimevideo"
+    countries_data:
+      LATAM:
+        PlatformCode: "amazon-prime-video"
+        account: account_3
+        cookie: false # Verificar esto
+        region: "na" # Debe ser región del server
+      MX:
+        PlatformCode: "mx.amazonprimevideo"
+        account: account_2
+        cookie: true # Verificar esto
+        region: "na" # Debe ser región del server
+        get_store: true
+      ########################
+      # Cuentas disponibles. #
+      ########################
+    accounts:
+      account_2:
+        user_name: "danielanaranjo1154@outlook.com" # Para MX
+        user_pass: "darwin1154*"
+        2FA: "N2TJDP6NCA4QF6ER5SXGEAUJLBHXFUNLH7BACELK7GLKB2QBH5RQ"
+      account_3:
+        user_name: "arturomontalvo1154@gmail.com" # Para LATAM y BR
+        user_pass: "darwin1154*"
+        2FA: 'PR4VTZKRDVQNG5UOMRLKFAKXRMJNGOHRE6TSDQFFRAE3OE6GSWYA'
+    start_url: 'https://www.primevideo.com/auth-redirect/ref=atv_nb_sign_in?signin=1&returnUrl=%2Fref%3Datv_unknown'
+    url_api: 'https://www.primevideo.com/region/{region}/gp/video/api/search?queryToken={token}&queryPageType=browse&ref_=atv_sr_infinite_scroll&pageId=default&startIndex={itemsStart}&totalItems=15&refMarker=atv_sr_infinite_scroll&ie=UTF8'
+    deeplink: 'https://www.primevideo.com{href}' # -> OLD DEEPLINK
+    deeplink2: 'https://app.primevideo.com/detail?gti={href}' # -> NEW DEEPLINK
+    url_store: https://www.primevideo.com/storefront/ref=nav_shopall_aiv_vid?merchId=RentBuy&ie=UTF8
+    url_channel : https://www.primevideo.com/storefront/channels/ref=atv_nb_sf_ch
+    url_original: https://www.primevideo.com/hp/video/api/search?phrase=amazon original&queryToken=&pageId=&queryPageType=&ref_=atv_sr_infinite_scroll&startIndex={start_index}&isCrow=1&useNodePlayer=1&totalItems={total}&refMarker=atv_sr_infinite_scroll&isHover2019=1&shouldShowPrimeSigns=1&ie=UTF8
+    queries:
+      user_name: '//input[contains(@id,"ap_email")]'
+      user_pass: '//input[contains(@id,"ap_password")]'
+      code_2fa: '//input[contains(@id, "auth-mfa-otpcode")]'
+      btn_login: '//input[contains(@id,"signInSubmit")]'
+      btn_login2: '//input[contains(@id,"auth-signin-button")]'
+      btn_otp: '//input[contains(@id,"auth-send-code")]'
+      chk_otp: '//input[contains(@value,", TOTP")]'
+      html: 'html'
+      a_see_more: '//a[contains(@class,"see-more")]' # Aplico Regex
+      div_all_categories: '//div[contains(@class,"u-collection tst-collection")]' # Aplico Regex
+      a_categories: '/html/body/div[1]/div[4]/div/div/div[3]/div/div[{last_categorie}]/div/div[2]/div/div/ul/li/div/a'
