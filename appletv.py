@@ -15,20 +15,24 @@ from selenium.webdriver.common.keys import Keys
 
 class AppleTV():
     def __init__(self):
-        print("HOLA")
         #self.db = MongoDB()
         self.start_url = 'https://tv.apple.com/hh'
         self.main_url = 'https://tv.apple.com/'
         options = webdriver.ChromeOptions()
+        #options.add_argument("--headless")
+        #options.add_argument("--disable-gpu")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.driver = webdriver.Chrome(options=options)
+        self.driver.maximize_window()
         self.scraping()
-        
         
     def scraping(self):
         countries = self.get_countries_codes()
-        for country in countries:
-            self.driver.get(self.main_url + country)
+        scraped_countries = []
+        pre_data = []
+        for x, country in enumerate(countries):
+            print("---------- Analizando Top Ten en " + country["Country"] + ". País " + str(x+1) + " de " + str(len(countries)) + " ----------")
+            self.driver.get(self.main_url + country["Code"])
             WebDriverWait(self.driver, 60).until(
                 EC.element_to_be_clickable((By.XPATH, '/html/body/main/div[1]/div/div[2]/div/div/button')))
             scheight = .1
@@ -42,46 +46,73 @@ class AppleTV():
             top_movies = []
             top_kids = []
             category_identificator = {
-                "Drama Series": "ember52",
-                "Comedy Series": "ember61",
-                "Non-Fiction Series": "ember65",
-                "Feature Films": "ember67"
+                "ember52": "Drama Series",
+                "ember59": "Comedy Series",
+                "ember65": "Feature Films",
+                "ember71": "Non-Fiction Series",
+                "ember77": "Family Fun"
             }
-            category_id_list = "ember52", "ember61", "ember65", "ember67"
-
-            for div in all_divs:
-                category = div.find("h2",class_="typ-headline-emph")
+            category_id_list = "ember52", "ember59", "ember65", "ember71", "ember77"
+            
+            for data in all_divs:
+                category = data.find("h2",class_="typ-headline-emph")
                 try:
                     category_id = category["id"]
                 except:
                     continue
-                category_name = div.find("h2",class_="typ-headline-emph").text.strip()
                 if category_id in category_id_list:
-                    dirty_elements = div.find("ul",class_="shelf-grid__list")
-                    clean_elements = dirty_elements.find_all("li",class_="shelf-grid__list-item")
-                    for element in clean_elements:
-                        try:
-                            element_div = element.find("div",class_="canvas-lockup")
-                            if element_div:
-                                title = element_div["aria-label"]
-                                print(title)
-                                info = element_div["data-metrics-click"]
-                                info = info.replace("{","")
-                                info = info.replace("}","")
-                                info = info.split(",")
-                                deeplink = info[2].replace("actionUrl","")
-                                deeplink = deeplink.replace('"',"")
-                                deeplink = deeplink.replace(":","")
-                                deeplink = "https://" + deeplink.replace("https//","")
-                                picture = element_div.picture
-                                for picture_element in picture:
-                                        print(picture_element)
-                        except:
-                            pass
-
+                    list_of_li = data.find_all("li",{"class":"shelf-grid__list-item"})
+                    # print(list_of_li)
+                    for li in list_of_li:
+                        div = li.find('div',{'class': 'canvas-lockup'})
+                        if not div:
+                            continue
+                        if not div.get('data-metrics-click'):
+                            continue
+                        data= div.get('data-metrics-click')
+                        data= json.loads(data) 
+                        index = int(li["data-item-index"]) + 1
+                        id= data['targetId']
+                        #print(index)
+                        #print(id)
+                        payload = {
+                            'Id': id,
+                            'Country': country["Country"],
+                            'Category': category_identificator[category_id],
+                            'Index': index
+                        }
+                        pre_data.append(payload)
+                    for li in list_of_li:
+                        div= li.find('a',{'class': 'notes-lockup'})
+                        if not div:
+                            continue
+                        if not div.get('data-metrics-click'):
+                            continue
+                        data= div.get('data-metrics-click')
+                        data= json.loads(data) 
+                        index = int(li["data-item-index"]) + 1
+                        #print(index)
+                        id= data['targetId']
+                        #print(id)
+                        payload = {
+                            'Id': id,
+                            'Country': country,
+                            'Category': category_identificator[category_id],
+                            'Index': index
+                        }
+                        pre_data.append(payload)
+            self.get_metadata(pre_data)
             
+    def get_metadata(self, pre_data):
+        print("Pre Data:")
+        for element in pre_data:
+            print(element)
+            url = 'https://tv.apple.com/api/uts/v2/view/show/{}?utsk=6e3013c6d6fae3c2%3A%3A%3A%3A%3A%3A235656c069bb0efb&caller=web&sf=143441&v=36&pfm=web&locale=en-US'.format(element["Id"])
+            print(url)
+        print("..... Cruzando datos con APIs para extraer más metadata ......")
+                        
     def get_countries_codes(self):
-        countries_codes = []
+        countries = []
         self.driver.get(self.start_url)
         WebDriverWait(self.driver, 60).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div/div[1]/div"))).click()
@@ -96,12 +127,21 @@ class AppleTV():
         html = self.driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         all_a = soup.find_all("a",class_="locale-switcher-modal__list__item")
+        all_codes = []
         for a in all_a:
             code = a["href"]
             code = code.replace("/","")
-            countries_codes.append(code)
+            code = code[:2]
+            if code not in all_codes:
+                all_codes.append(code)
+                country_code = {
+                    "Code": code,
+                    "Country": a.text.strip()
+                }
+
+                countries.append(country_code)
         
-        return countries_codes
+        return countries
 
 if __name__ =='__main__':
     AppleTV()
