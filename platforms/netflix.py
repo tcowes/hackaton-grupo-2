@@ -78,6 +78,7 @@ class Netflix():
             self.extract_data(ids)
         Datamanager._insertIntoDB(self, self.content, self.database)
         self.sesion.close()
+        self.driver.quit()
 
     def extract_ids(self):
         ''' Extract ten principals contents ids '''

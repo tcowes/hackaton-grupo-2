@@ -83,6 +83,9 @@ class StarPlus():
 
         Datamanager._insertIntoDB(self, self.payloads, self.database)
 
+        self.sesion.close()
+        self.driver.quit()
+
     def scrap_movies(self):
         ''' Extracts all movies data '''
         WebDriverWait(self.driver, 60).until(
