@@ -22,6 +22,7 @@ class AppleTV():
         #options.add_argument("--headless")
         #options.add_argument("--disable-gpu")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        self.currentSession = requests.session()
         self.driver = webdriver.Chrome(options=options)
         self.driver.maximize_window()
         self.scraping()
@@ -104,12 +105,20 @@ class AppleTV():
             self.get_metadata(pre_data)
             
     def get_metadata(self, pre_data):
+        print("..... Cruzando datos con APIs para extraer más metadata ......")
         print("Pre Data:")
         for element in pre_data:
             print(element)
             url = 'https://tv.apple.com/api/uts/v2/view/show/{}?utsk=6e3013c6d6fae3c2%3A%3A%3A%3A%3A%3A235656c069bb0efb&caller=web&sf=143441&v=36&pfm=web&locale=en-US'.format(element["Id"])
             print(url)
-        print("..... Cruzando datos con APIs para extraer más metadata ......")
+            response = self.getUrl(url=url)
+            try:
+                data = response.json()
+            except:
+                continue
+            content_deeplink = data['data']['content']['url']
+            print("content deeplink",content_deeplink)
+
                         
     def get_countries_codes(self):
         countries = []
@@ -142,6 +151,30 @@ class AppleTV():
                 countries.append(country_code)
         
         return countries
+
+    def getUrl(self, url):
+        requestsTimeout = 5
+        while True:
+            try:
+                response = self.currentSession.get(url, timeout=requestsTimeout)
+                return response
+            except requests.exceptions.ConnectionError:
+                print("Connection Error, Retrying")
+                time.sleep(requestsTimeout)
+                requestsTimeout = requestsTimeout + 5
+                if requestsTimeout == 45:
+                    print('Timeout has reached 45 seconds.')
+                    break
+                continue
+            except requests.exceptions.RequestException:
+                print('Waiting...')
+                time.sleep(requestsTimeout)
+                requestsTimeout = requestsTimeout + 5
+                if requestsTimeout == 45:
+                    print('Timeout has reached 45 seconds.')
+                    break
+                continue
+        
 
 if __name__ =='__main__':
     AppleTV()
