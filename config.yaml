@@ -17,3 +17,7 @@ ott_sites:
   Netflix:
     countries:
       AR:
+  AppleTV:
+    countries:
+      ALL: 'https://tv.apple.com/'
+
