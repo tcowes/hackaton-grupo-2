@@ -78,7 +78,7 @@ class AppleTV():
                         #print(id)
                         payload = {
                             'Id': id,
-                            'Country': country["Country"],
+                            'Country': country["Code"],
                             'Category': category_identificator[category_id],
                             'Index': index
                         }
@@ -116,9 +116,156 @@ class AppleTV():
                 data = response.json()
             except:
                 continue
-            content_deeplink = data['data']['content']['url']
-            print("content deeplink",content_deeplink)
+            deeplink = data['data']['content']['url']
+            content_deeplink_data = self.currentSession.get(deeplink).text
+            content_soup = BeautifulSoup(content_deeplink_data, 'lxml')
+            deeplink = deeplink.replace("https://tv.apple.com/us", "https://tv.apple.com/" + element["Country"])
+            if data['data']['content']['type'] == 'Movie':
+                type = 'movie'
+            elif data['data']['content']['type'] == 'Show':
+                type = 'serie'
+                seasons = []
+                seasons_year ={}
+                seasons_ids  = {}
+                season_episodes ={}
+                skip = 0
 
+                while True:
+                    epiurl = 'https://tv.apple.com/api/uts/v2/view/show/{}/episodes?skip={skip}&count=50&utsk=6e3013c6d6fae3c2%3A%3A%3A%3A%3A%3A235656c069bb0efb&caller=web&sf=143441&v=36&pfm=web&locale=en-US'.format(element["Id"], skip=skip)
+                    print('URL EPISODE ',epiurl)
+                    response = self.getUrl(url=epiurl)
+                    epidata = response.json()
+                    scraped = []
+                    for epi in epidata['data']['episodes']:
+                            # print(epi)
+                            ### ### ### ### ### ### ### ### ### ### 
+                            
+                            if epi['id'] in scraped:
+                                continue
+                            else:
+                                scraped.append(epi['id'])
+
+                            if epi['seasonNumber'] not in [ s["Number"] for s in seasons]:
+                                season_episodes[str(epi['seasonNumber'])] = 1
+                                seasons_ids[str(epi['seasonNumber'])] = {'episode_number': epi['episodeNumber'], 'id': epi['id'], 'synopsis':epi['description']}
+                                seasons_year[str(epi['seasonNumber'])] = year
+                                seasons.append({'Title': "{}: Season {}".format(epi['showTitle'] ,epi['seasonNumber']), "Number": epi['seasonNumber'],
+                                                'Image':None,'Directors':None,'Cast':None, 'Is_original':None  })
+                            else:
+                                if seasons_year[str(epi['seasonNumber'])] > year:
+                                    seasons_year[str(epi['seasonNumber'])] = year
+                                if seasons_ids[str(epi['seasonNumber'])]['episode_number'] > epi['episodeNumber']:
+                                    seasons_ids[str(epi['seasonNumber'])]['id'] = epi['id']
+                                    seasons_ids[str(epi['seasonNumber'])]['synopsis'] = epi['description']
+                                season_episodes[str(epi['seasonNumber'])] += 1
+                                
+                    epiTotal = len(epidata['data']['episodes'])
+                                
+                    for season in seasons:
+                        season['Id'] = seasons_ids[str(epi['seasonNumber'])]['id']
+                        season['Synopsis'] = seasons_ids[str(epi['seasonNumber'])]['synopsis']
+                        season['Year'] = seasons_year[str(season['Number'])]
+                        season['Episodes'] = season_episodes[str(epi['seasonNumber'])]
+                        
+                    if epiTotal == 50:
+                        skip = skip + 50
+                    else:
+                        break
+
+
+                if data['data']['content'].get('genres'):
+                    genres = []
+                for g in data['data']['content']['genres']:
+                    genres.append(g['name'])
+                else:
+                    genres = None
+                    
+                roles_data = content_soup.find_all("div", {"class": "profile-lockup__details"})
+                cast, directors, crew = self.get_roles(roles_data)    
+                    
+                imageL = []
+                images =  data['data']['content']['images']['coverArt']['url'] if data['data']['content']['images'].get('coverArt') else None
+                width  =  data['data']['content']['images']['coverArt']['width'] if data['data']['content']['images'].get('coverArt') else None
+                height =  data['data']['content']['images']['coverArt']['height'] if data['data']['content']['images'].get('coverArt') else None
+                if images != None and width != None and height != None:
+                    images = images.split('{')
+                    images = images[0]
+                    images = images + str(width) + 'x' + str(height) + 'tc.jpg'
+                    imageL.append(images)
+                try:             
+                    _timestamp = data['data']['content']['releaseDate']
+                    _timestamp = str(_timestamp)
+                    _timestamp = _timestamp[:-3]
+                    _timestamp = int(_timestamp)
+                    date_ = date.fromtimestamp(_timestamp)
+                    year = date.fromtimestamp(_timestamp)
+                    year = str(year)
+                    year = year.split('-')
+                    year = int(year[0])
+                    if year < 1870 or year > datetime.now().year:
+                        year = None
+                except:
+                    year = None
+                
+                if not year:
+                    year = self.get_year_from_soup(content_soup)
+            
+                more_data = data['data']['content']            
+                is_original= more_data['isAppleOriginal']
+                if more_data.get('rating'):
+                    rating = more_data['rating']['displayName'] 
+                else:
+                    rating = None
+                if more_data.get('duration'):
+                    duration = more_data['duration'] // 60
+                else:
+                    duration = None
+                
+                try:
+                    synopsis = more_data['data']['content']['description']
+                except:
+                    synopsis = None
+                    
+                if type == "serie":
+                    payload = {
+                        "platform.name": "AppleTV",
+                        "platform.country": element["Country"],
+                        "id": element["Id"],
+                        "title": data['data']['content']['title'],
+                        "year": year,
+                        "deeplink_web": deeplink,
+                        "synopsis": synopsis,
+                        "image": imageL,
+                        "rating": rating,
+                        "genres": genres,
+                        "cast": cast,
+                        "directors": directors,
+                        "is_original": is_original,
+                        "episodes": epiTotal,
+                        "seasons": seasons,
+                        "crew": crew
+                }
+            else:
+                payload = {
+                        "platform.name": "AppleTV",
+                        "platform.country": element["Country"],
+                        "id": element["Id"],
+                        "title": data['data']['content']['title'],
+                        "year": year,
+                        "duration": duration,
+                        "deeplink_web": deeplink,
+                        "synopsis": synopsis,
+                        "image": imageL,
+                        "rating": rating,
+                        "genres": genres,
+                        "cast": cast,
+                        "directors": directors,
+                        "is_original": is_original,
+                        "crew": crew
+                }
+            
+            print(payload)
+                
                         
     def get_countries_codes(self):
         countries = []
@@ -151,6 +298,40 @@ class AppleTV():
                 countries.append(country_code)
         
         return countries
+
+    def clean_cast(self, cast_list):
+        """Limpia los nombres de los actores en caso de ser necesario
+        """
+        cast = []
+        for actor in cast_list:
+            cast.append(actor.replace('\xa0', ' '))
+        return cast if cast else None
+
+    def get_roles(self, roles_data):
+        
+        cast = []
+        directors = []
+        crew = []
+        
+        for person_data in roles_data:
+            person_name_data = person_data.contents[1].text
+            person_name = person_name_data.replace('\n','').strip().replace('\xa0', ' ')
+            
+            role_data = person_data.parent
+            person_role = json.loads(role_data['data-metrics-click'])['contentType']
+            
+            if person_role == 'Actor':
+                cast.append(person_name)
+                
+            elif person_role == 'Director':
+                directors.append(person_name)
+            
+            else:
+                crew.append(
+                    {'Role': person_role,
+                     'Name': person_name})
+        
+        return cast or None, directors or None, crew or None
 
     def getUrl(self, url):
         requestsTimeout = 5
