@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # 4) Indico en formato "string", el nombre del módulo a importar.
     module = None
-    module = 'platforms.'  + ott_platforms.lower()
+    module = 'platforms.' + ott_platforms.lower()
     #####################################################
     # IMPORTANTE: El nombre del archivo, debe ser igual #
     # al nombre de la clase.                            #

@@ -8,8 +8,8 @@ from utils.mongo import mongo
 from selenium import webdriver
 from utils.payload import Payload
 from pyvirtualdisplay import Display
-from utils.datamanager import Datamanager      
 from selenium.webdriver.common.by import By
+from utils.datamanager import Datamanager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 # from selenium.webdriver.common.action_chains import ActionChains

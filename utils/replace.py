@@ -1,7 +1,7 @@
 from datetime import datetime
 
 replace_strings = [
-    "(Full Content) Gippy Grewal | Gurpreet Ghuggi | Geeta Basra | New Punjabi Full Content | SagaMusic",
+    "(Full Movie) Gippy Grewal | Gurpreet Ghuggi | Geeta Basra | New Punjabi Full Movie | SagaMusic",
     "- Director’s Cut (plus Kinofassung)",
     "(Originalfassung) (Mit Untertiteln)",
     "(Originalfassung) (Mit Untertitel)",
@@ -26,7 +26,7 @@ replace_strings = [
     "(Version Longue InÃ©dite)",
     " (Doblada y Subtitulada)",
     " [Doblada y Subtitulada]",
-    "- Extended Edition Content",
+    "- Extended Edition Movie",
     "(Extended Dance Edition)",
     "(Unrated Director's Cut)",
     ": The Complete Series 19",
@@ -51,7 +51,7 @@ replace_strings = [
     "(Plus Bonus Features)",
     "(con Material Extra)",
     "(plus Bonus Feature)",
-    "- 2 Content Collection",
+    "- 2 Movie Collection",
     "- Director's Fan Cut",
     "(Digital Remastered)",
     "(Remastered Edition)",
@@ -198,7 +198,7 @@ replace_strings = [
 
 def _replace(content_title):
     this_year = datetime.now().year
-    this_year = 1  # Le sumo uno porque range arranca a contar de 0.
+    this_year += 1  # Le sumo uno porque range arranca a contar de 0.
 
     for i in range(1870, this_year):
         content_title = content_title.replace('({})'.format(i), '')
