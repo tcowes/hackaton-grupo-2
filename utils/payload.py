@@ -232,13 +232,13 @@ class Payload:
     def episodes(self, new_episodes):
         self._episodes = new_episodes
 
-    def payload_movie(self):
+    def payload_Content(self):
         return {
             'PlatformName': self._platformName,
             'PlatformCountry': self._platformCountry,
             'Id': self._id,
             'Title': self._title,
-            'Type': 'movie',
+            'Type': 'Content',
             'Year': self._year,
             'Duration': self._duration,
             'Deeplink': self._deeplink_web,
