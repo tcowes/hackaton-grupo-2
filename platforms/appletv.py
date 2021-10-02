@@ -88,25 +88,7 @@ class AppleTV():
                             'Index': index
                         }
                         pre_data.append(payload)
-                    for li in list_of_li:
-                        div= li.find('a',{'class': 'notes-lockup'})
-                        if not div:
-                            continue
-                        if not div.get('data-metrics-click'):
-                            continue
-                        data= div.get('data-metrics-click')
-                        data= json.loads(data) 
-                        index = int(li["data-item-index"]) + 1
-                        #print(index)
-                        id= data['targetId']
-                        #print(id)
-                        payload = {
-                            'Id': id,
-                            'Country': country,
-                            'Category': category_id,
-                            'Index': index
-                        }
-                        pre_data.append(payload)
+
             self.get_metadata(pre_data)
             
     def get_metadata(self, pre_data):
@@ -305,9 +287,11 @@ class AppleTV():
         print("total series", str(len(total_series)))
         print("total movies", str(len(movies)))
         print("kids", str(len(kids)))
-        Datamanager._insertIntoDB(self, total_series, self.database)
-        Datamanager._insertIntoDB(self, movies, self.database)
-        Datamanager._insertIntoDB(self, kids, self.database)
+        self.mongo.insertMany(self.database, total_series)
+        
+        self.mongo.insertMany(self.database, movies)
+        
+        self.mongo.insertMany(self.database, kids)
                         
     def get_countries_codes(self):
         countries = []
