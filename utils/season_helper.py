@@ -74,7 +74,7 @@ class SeasonHelper():
         _list = list()
         for episode in episodes:
             if episode[field]:
-                _list += episode[field]
+                _list = episode[field]
         return list(set(_list)) if _list else None
 
     def get_cast(self, episodes):

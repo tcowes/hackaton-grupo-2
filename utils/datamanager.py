@@ -1,4 +1,3 @@
-from os import EX_PROTOCOL
 import time
 import logging
 import requests
@@ -83,14 +82,14 @@ class Datamanager():
             print("\x1b[1;31;40m     EXISTE EPISODIO \x1b[0m {}x{} --> {} : {} : {}".format(payload['Season'],payload['Episode'],payload['ParentId'],payload['Id'],payload['Title']))
         else:
             if currentItem == 0 and totalItems == 0:
-                if payload['Type'] == 'movie':
+                if payload['Type'] == 'Content':
                     print("\x1b[1;31;40m EXISTE PELICULA \x1b[0m {} : {}".format(payload['Id'],payload['Title']))
                 else:
                     print()
                     print("\x1b[1;31;40m EXISTE SERIE \x1b[0m {} : {}".format(
                         payload['Id'], payload['Title']))
             else:
-                if payload['Type'] == 'movie':
+                if payload['Type'] == 'Content':
                     print("\x1b[1;31;40m {}/{} EXISTE PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
                 else:
                     print()
@@ -110,22 +109,22 @@ class Datamanager():
                 print("\x1b[1;32;40m     INSERT EPISODIO \x1b[0m {}x{} --> {} : {} : {}".format(payload['Season'],payload['Episode'],payload['ParentId'],payload['Id'],payload['Title']))
             else:
                 if currentItem == 0 and totalItems == 0:
-                    if payload['Type'] == 'movie':
+                    if payload['Type'] == 'Content':
                         print("\x1b[1;32;40m INSERT PELICULA \x1b[0m {} : {}".format(payload['Id'], payload['Title']))
                     else:
                         print()
                         print("\x1b[1;32;40m INSERT SERIE \x1b[0m {} : {}".format(payload['Id'],payload['Title']))
                 else:
-                    if payload['Type'] == 'movie':
+                    if payload['Type'] == 'Content':
                         print("\x1b[1;32;40m {}/{} INSERT PELICULA \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
                     else:
                         print()
                         print("\x1b[1;32;40m {}/{} INSERT SERIE \x1b[0m {} : {}".format(currentItem,totalItems,payload['Id'],payload['Title']))
         else:
             if isEpi:
-                self.skippedEpis += 1
+                self.skippedEpis = 1
             else:
-                self.skippedTitles += 1
+                self.skippedTitles = 1
 
     def _dataChecker(self, payload, isEpi):
         '''
@@ -258,14 +257,14 @@ class Datamanager():
                 print("\x1b[1;37;41m", URL,"\x1b[0m")
                 print("\x1b[1;37;41m La conexion fallo, reintentando... (Intento #{})\x1b[0m".format(tryNumber))
 
-                tryNumber += 1
+                tryNumber = 1
                 timeOut = tryNumber * 10 #aumenta el timeOut a medida que mas tries hace, maximo 1:40 mins
             except Exception as e:
                 print(repr(e))
                 # print(content.text)
                 print("\x1b[1;37;41m",URL,"\x1b[0m")
                 print("\x1b[1;37;41m El JSON fallo, reintentando... (Intento #{})\x1b[0m".format(tryNumber))
-                tryNumber += 1
+                tryNumber = 1
         return jsonData
 
     def threadedFunction(func, func_args, workers=1, join=True, return_threads=False):
@@ -332,9 +331,9 @@ class RequestsUtils():
 
     # Soluciona problemas de SSL en algunas plataformas al realizar requests
     def __increase_default_value_ssl(self):
-        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'HIGH:!DH:!aNULL'
         try:
-            requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += 'HIGH:!DH:!aNULL'
+            requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST = 'HIGH:!DH:!aNULL'
         except AttributeError:
             pass
 
@@ -399,7 +398,7 @@ class RequestsUtils():
         list_responses = []
         len_urls = len(list_urls)
         # ["url1","url2","url3","url4","url5","url6"] --> [["url1","url2","url3"], ["url4","url5","url6"]]
-        list_urls = [list(list_urls[i:i+max_workers]) for i in range(0, len_urls, max_workers)]
+        list_urls = [list(list_urls[i:imax_workers]) for i in range(0, len_urls, max_workers)]
         for sublist_urls in list_urls:
             list_threads = []
             with ThreadPoolExecutor(max_workers=max_workers) as executor:

@@ -10,7 +10,7 @@ class MongoDB():
         try:
             self.host_mongo = 'mongodb://localhost:27017/'
             self.cursor = MongoClient(self.host_mongo)
-            self.db = self.cursor.hackaton_data
+            self.db = self.cursor.titan
         except ConnectionFailure:
             print('--- ERROR AL CONECTARSE A LOCALHOST, POR FAVOR VERIFICAR SI MONGODB ESTA CORRIENDO ---')
             return False
@@ -18,10 +18,7 @@ class MongoDB():
     def return_db(self):
         return self.db
 
-    def content_collection(self, collection='content'):
-        return self.db[collection]
-
-    def epi_collection(self, collection='episodes'):
+    def content_collection(self, collection='hackatonTopTen'):
         return self.db[collection]
 
     def insert_one(self, query, collection=None):
