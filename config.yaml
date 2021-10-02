@@ -20,3 +20,5 @@ ott_sites:
   AppleTV:
     countries:
       ALL: 'https://tv.apple.com/'
+
+  -
