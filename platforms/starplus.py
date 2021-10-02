@@ -46,18 +46,18 @@ class Starplus():
 
     def _scraping(self):
         self.login()
-        self.scrap_movies()
+        self.scrap_Contents()
         self.scrap_series()
 
-    def scrap_movies(self):
-        ''' Extracts all movies data '''
+    def scrap_Contents(self):
+        ''' Extracts all Contents data '''
         WebDriverWait(self.driver, 60).until(
                         EC.element_to_be_clickable((By.XPATH, "//a[@data-testid='navigation-item-4-PELÍCULAS']"))).click()
         time.sleep(2)   
         principal = self.driver.find_element_by_css_selector(
                     "div[class='sc-hgRTRy jrzXWb']").find_elements_by_css_selector(
                     "a[class='sc-EHOje WxEV basic-card skipToContentTarget']")
-        movies = []
+        Contents = []
         total = len(principal)
         counter = 0
         while True:
@@ -79,7 +79,7 @@ class Starplus():
                 content['url'] = self.driver.current_url
                 content['image'] = self.driver.find_element_by_css_selector(
                         "div[class='sc-dRaagA jNrEQj']").find_element_by_tag_name('img').get_attribute('src')
-                content['type'] = 'movie'
+                content['type'] = 'Content'
                 content['synopsis'] = self.driver.find_element_by_css_selector(
                         "p[class='margin--0 body-copy body-copy--large text-color--primary']").text
                 pre_data = self.driver.find_elements_by_css_selector(
@@ -113,12 +113,12 @@ class Starplus():
                     content['cast'] = [name.text for name in names]
                 except IndexError:
                     content['cast'] = None
-                movies.append(content)
+                Contents.append(content)
                 print(content)
                 
                 self.driver.execute_script("window.history.go(-1)")
                 time.sleep(4)
-                counter += 1
+                counter = 1
             except ElementClickInterceptedException:
                 self.driver.find_element_by_css_selector(
                         "button[class='sc-iiUIRa iXgoSW slick-arrow slick-next']").click()
