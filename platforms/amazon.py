@@ -169,12 +169,6 @@ class Amazon():
     def get_title(self, soup):
         title = soup.find('h1', {'class':"_2IIDsE _3I-nQy"})
         return title.string
-
-    def get_year(self, soup):
-        pass
-        #_span = soup.find('span', {'class':"XqYSS8"})
-        #year = _span.string
-        #return year
    
     def get_type(self, soup):
         _span = soup.find_all('span', {'class':"XqYSS8"})
@@ -192,7 +186,15 @@ class Amazon():
         return (span_year.string, self.get_duration(span_duration.string))
 
     def get_year(self, soup):
-        return soup.find('span', {'class':"XqYSS8"}).string
+        year_span = soup.find_all('span', {'class':"XqYSS8"})
+        year_str = []
+        year = None
+        for j in year_span:
+            year_str.append(j.find('span').string)
+        for y in year_str:
+            if y.isnumeric():
+                year = int(y)
+        return year
     
     def get_synopsis(self, soup):
         span_synopsis = soup.find('div', {'class':"_3qsVvm _1wxob_"})
