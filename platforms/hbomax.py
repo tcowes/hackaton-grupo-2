@@ -12,7 +12,6 @@ from utils.datamanager import Datamanager, RequestsUtils
 class HBOMax():
     """
     TODO:
-
     - DATOS IMPORTANTES:
         - Versión Final: TODO:
         - VPN: TODO:
@@ -25,7 +24,6 @@ class HBOMax():
         - Última revisión: TODO:
         - ¿Cuanto demoró la ultima vez? TODO:
         - ¿Cuantos contenidos trajo la ultima vez? TODO:
-
     - OTROS COMENTARIOS:
         TODO:
     """
@@ -55,27 +53,24 @@ class HBOMax():
         self.skippedTitles = 0
         self.skippedEpis = 0
         self.res = RequestsUtils()
-
         if type == 'scraping':
             self._scraping()
 
     def _scraping(self):
 
-        sections_ids = {
-            'Top 10 Movies': 'urn:hbo:tray:Ih5zk_5MKc9dbHP-IyOjO',  # Movies
-            'Top 10 Series': 'urn:hbo:tray:fYZFVXDBbYrKbaf_ZAlsF',  # Series
-            'Top 10 Kids': 'urn:hbo:tray:wBNZilMZVN3CW82FRYp2A'  # Kids
-        }
+        sections_ids = (
+            'urn:hbo:tray:Ih5zk_5MKc9dbHP-IyOjO',  # Movies
+            'urn:hbo:tray:fYZFVXDBbYrKbaf_ZAlsF',  # Series
+            'urn:hbo:tray:wBNZilMZVN3CW82FRYp2A'  # Kids
+        )
 
         self.get_originals()
-
         for section in sections_ids:
             url = self.section_api.format(
-                section=sections_ids[section],
+                section=section,
                 country=self.country_code
             )
             data = Datamanager._getJSON(self, url)
-
             for content in data[-1]['body']['references']['items']:
                 content_url = self.build_url(content)
                 content_data = Datamanager._getJSON(self, content_url)
@@ -88,7 +83,6 @@ class HBOMax():
                     prepayload = self.prescraping_serie(content_data)
                 else:
                     prepayload = self.prescraping_movie(content_data)
-                prepayload['Section'] = section
                 self.prepayloads.append(prepayload)
 
         for item in self.prepayloads:
@@ -105,9 +99,7 @@ class HBOMax():
                 payload = payload.payload_serie()
             Datamanager._checkDBandAppend(
                 self, payload, self.scraped, self.payloads)
-
         Datamanager._insertIntoDB(self, self.payloads, self.database)
-
         self.sesion.close()
 
     def build_url(self, content_id, season=False):
@@ -138,14 +130,13 @@ class HBOMax():
                 id_for_url = f'urn:hbo:feature:{clean_id}'
             url = self.content_api.format(
                 content_id=id_for_url, country=self.country_code)
-        return url
+            return url
 
     def prescraping_serie(self, serie_data):
         """Este método se encarga de prescrapear las
         temporadas y sus respectivos episodios, también
         va a crear un prepayload con datos pertinentes
         de la serie.
-
         - Args:
             - serie_data (dict): json de la serie
         - Return: dict - prepayload de la serie
@@ -153,14 +144,12 @@ class HBOMax():
         content_body = serie_data[0]['body']
         title = content_body['details']['title']
         id_ = content_body['myListId']
-
         # Buscar ids de temporadas:
         season_ids = []
         for tile in serie_data:
             label = tile['body'].get('label')
             if label == 'Seasons':
                 season_ids.extend(tile['body']['references']['tabs'])
-
         episodes_data = []
         if not season_ids:
             # Solo tiene una temporada y los episodios están sueltos:
@@ -189,7 +178,6 @@ class HBOMax():
         if not episodes_data:
             # Si no se trajo datos de los episodios se saltea la serie.
             return None
-
         prepayload = self.build_prepayload(
             title, id_, 'serie', serie_data[0], episodes_data
         )
@@ -201,7 +189,6 @@ class HBOMax():
         Cuando obtiene esos episodios los agrega a la
         lista de episodios que recibe como segundo
         parámetro.
-
         - Args:
             - id_list ([str]): lista de ids de episodios
             - data_list ([dict]): lista de datos de episodios ya obtenidos
@@ -220,7 +207,6 @@ class HBOMax():
         """En base a una lista de episodios, se scrapea
         uno por uno mientras que se van recopilando sus datos
         para luego atribuirselos a la serie.
-
         - Args:
             - serie_data (Payload): datos de la serie
             - episodes_list ([[dict]]): datos de los episodios de una serie
@@ -261,7 +247,6 @@ class HBOMax():
     def build_prepayload(self, title, id_, type_, json, episodes=None):
         """En base a algunos parámetros, devuelve
         un dict que comprende un prepayload de un contenido
-
         - Args:
             - title (str): titulo del contenido
             - id_ (str): id del contenido
@@ -283,7 +268,6 @@ class HBOMax():
         """Este método se encarga de crear un
         prepayload con datos pertinentes de la
         pelicula.
-
         - Args:
             - movie_data (dict): json de la pelicula
         - Return: dict - prepayload de la pelicula
@@ -302,7 +286,6 @@ class HBOMax():
     def build_payload(self, content):
         """Este método construye un payload en base
         a los datos recibidos por parámetro.
-
         - Args:
             - content (dict): prepayload de un contenido
         - Return: Payload
@@ -311,8 +294,6 @@ class HBOMax():
         payload.title = content['Title']
         payload.id = self.get_clean_id(content['Id'])
         payload.is_original = payload.id in self.ids_originals
-        payload.section = content.get('Section')
-
         type_ = content['Type']
         json = content['JSON']
         payload.duration = self.get_duration(json, type_)
@@ -327,7 +308,6 @@ class HBOMax():
         payload.deeplink_web = self.get_deeplink(payload.id, type_)
         payload.platform_country = self.country_code
         payload.platform_name = self.name
-
         if content['Type'] == 'episode':
             payload.parent_id = content['ParentId']
             payload.parent_title = content['ParentTitle']
@@ -342,7 +322,6 @@ class HBOMax():
         url = self.section_api.format(
             section='urn:hbo:page:originals', country=self.country_code)
         data = Datamanager._getJSON(self, url)
-
         for tile in data:
             body = tile['body']
             if body.get('header'):
@@ -520,12 +499,10 @@ class HBOMax():
 
     def get_clean_id(self, id_):
         """Procesa un id para devolverlo limpio
-
         Pueden venir en este formato:
         - 'urn:hbo:feature:GVU3k2gEncoNJjhsJAY0_'
         - 'urn:hbo:tile:GXuu7ygQ61cI9DgEAAAAY:type:series'
         - 'urn:hbo:tile:GX7_dBQJHuaipuAEAAAAE:type:feature'
-
         Solo interesa el que es una combinación de letras, nros y símbolos.
         """
         clean_id = re.search('urn:hbo:(.+?):(.+?)(:|$)', id_).group(2)
@@ -561,7 +538,6 @@ class HBOMax():
         los packages y datos en listas como cast y directors.
         Luego de la recopilación se agrega el campo seasons con la lista
         de temporadas a la serie.
-
         - Args:
             - serie_payload (Payload): payload de la serie
             - episodes ([Payload]): lista de payloads de episodios
@@ -571,7 +547,6 @@ class HBOMax():
         serie_payload.directors = episodes[0].directors
         serie_payload.crew = episodes[0].crew
         serie_payload.rating = episodes[0].rating
-
         if seasons:
             for season in seasons:
                 if season['Number'] == 1:

@@ -8,8 +8,8 @@ from utils.mongo import mongo
 from selenium import webdriver
 from utils.payload import Payload
 from pyvirtualdisplay import Display
-from utils.datamanager import Datamanager      
 from selenium.webdriver.common.by import By
+from utils.datamanager import Datamanager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 # from selenium.webdriver.common.action_chains import ActionChains
@@ -152,7 +152,7 @@ class StarPlus():
 
                 self.driver.execute_script("window.history.go(-1)")
                 time.sleep(4)
-                counter += 1
+                counter = 1
             except ElementClickInterceptedException:
                 self.driver.find_element_by_css_selector(
                         "button[class='sc-iiUIRa iXgoSW slick-arrow slick-next']").click()

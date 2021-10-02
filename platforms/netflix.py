@@ -105,7 +105,7 @@ class Netflix():
         ''' Extract all data of contents '''
 
         for _id in ids:
-            url = self.content_url+_id
+            url = self.content_url + _id
             self.driver.get(url)
             time.sleep(5)
             title = self.driver.find_element_by_css_selector(
