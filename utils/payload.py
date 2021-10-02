@@ -3,7 +3,8 @@ from utils.replace import _replace
 
 
 class Payload:
-    def __init__(self, platform_code=None,
+    def __init__(self, platform_name=None,
+                 platform_country=None,
                  id_=None,
                  title=None,
                  original_title=None,
@@ -23,7 +24,7 @@ class Payload:
                  cast=None,
                  directors=None,
                  availability=None,
-                 download=None,     
+                 download=None,
                  is_original=None,
                  is_branded=None,
                  is_adult=None,
@@ -37,11 +38,9 @@ class Payload:
                  seasons=None,
                  number=None,
                  createdAt=None,
-                 crew=None,
-                 subtitles=None,
-                 dubbed=None):
-
-        self._platformCode = platform_code
+                 crew=None):
+        self._platformName = platform_name
+        self._platformCountry = platform_country
         self._id = id_
         self._title = title
         self._original_title = original_title
@@ -78,16 +77,22 @@ class Payload:
         self._seasons = seasons
         self._number = number
         self._crew = crew
-        self._subtitles = subtitles
-        self._dubbed = dubbed
 
     @property
-    def platform_code(self):
-        return self._platformCode
+    def platform_name(self):
+        return self._platformName
 
-    @platform_code.setter
-    def platform_code(self, new_platform):
-        self._platformCode = new_platform
+    @platform_name.setter
+    def platform_name(self, name):
+        self._platformName = name
+
+    @property
+    def platform_country(self):
+        return self._platform
+
+    @platform_country.setter
+    def platform_country(self, country):
+        self._platformCountry = country
 
     @property
     def id(self):
@@ -243,22 +248,6 @@ class Payload:
         self._crew = new_crew
 
     @property
-    def subtitles(self):
-        return self._subtitles
-
-    @subtitles.setter
-    def subtitles(self, new_subtitles):
-        self._subtitles = new_subtitles
-
-    @property
-    def dubbed(self):
-        return self._dubbed
-
-    @dubbed.setter
-    def dubbed(self, new_dubbed):
-        self._dubbed = new_dubbed
-
-    @property
     def availability(self):
         return self._availability
 
@@ -390,7 +379,8 @@ class Payload:
 
     def payload_movie(self):
         return {
-            'PlatformCode': self._platformCode,
+            'PlatformName': self._platformName,
+            'PlatformCountry': self._platformCountry,
             'Id': self._id,
             'Title': self._title,
             'OriginalTitle': self._original_title,
@@ -405,8 +395,6 @@ class Payload:
             },
             'Playback': self._playback,
             'Synopsis': self._synopsis,
-            "Subtitles": self._subtitles,
-            "Dubbed": self._dubbed,
             'Image': self._image,
             'Rating': self._rating,
             'Provider': self._provider,
@@ -428,7 +416,8 @@ class Payload:
 
     def payload_serie(self):
         return {
-            'PlatformCode': self._platformCode,
+            'PlatformName': self._platformName,
+            'PlatformCountry': self._platformCountry,
             'Id': self._id,
             'Title': self._title,
             'OriginalTitle': self._original_title,
@@ -444,8 +433,6 @@ class Payload:
             'Seasons': self._seasons,
             'Playback': self._playback,
             'Synopsis': self._synopsis,
-            "Subtitles": self._subtitles,
-            "Dubbed": self._dubbed,
             'Image': self._image,
             'Rating': self._rating,
             'Provider': self._provider,
@@ -482,7 +469,6 @@ class Payload:
 
     def payload_episode(self):
         return {
-            'PlatformCode': self.platform_code,
             'ParentId': self._parent_id,
             'ParentTitle': self._parent_title,
             'Id': self.id,
@@ -498,8 +484,6 @@ class Payload:
                 'iOS': self._deeplink_ios
             },
             'Synopsis': self.synopsis,
-            "Subtitles": self._subtitles,
-            "Dubbed": self._dubbed,
             'Rating': self.rating,
             'Provider': self.provider,
             'ExternalIds': self._external_ids,
