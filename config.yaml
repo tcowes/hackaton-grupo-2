@@ -2,10 +2,15 @@ mongo:
   host: 'mongodb://localhost:27017/'
   collections:
     top_ten_hackaton: hackatonTopTen
-    top_ten_hackaton_epi: hackatonTopTenEpisodes
+    # top_ten_hackaton_epi: hackatonTopTenEpisodes
 ott_sites:
+  StarPlus:
+    countries:
+      AR:
   HBOMax:
     countries:
-      AR: # poner url
+      AR:
     urls:
-      top_ten_section: https://comet-latam.api.hbo.com/express-content/{section_id}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country_code}
+      deeplink: https://play.hbomax.com/page/
+      section_api: https://comet-latam.api.hbo.com/express-content/{section}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country}
+      content_api: https://comet-latam.api.hbo.com/express-content/{content_id}?device-code=desktop&product-code=hboMax&api-version=v9.0&country-code={country}
