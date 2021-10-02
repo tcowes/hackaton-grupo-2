@@ -1,16 +1,22 @@
+# import re
 import time
-import re
-from datetime import datetime
+import platform
+import requests
+from common import config
+from utils.mongo import mongo
+# from datetime import datetime
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.support.ui import WebDriverWait
+from pyvirtualdisplay import Display
 from selenium.webdriver.common.by import By       
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+# from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import ElementClickInterceptedException
+# from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 
-class Starplus():
+class StarPlus():
     """
     TODO:
 
@@ -30,11 +36,36 @@ class Starplus():
     - OTROS COMENTARIOS:
         TODO:
     """
-    def __init__(self):
-    # bbdd:
+    def __init__(self, ott_site_uid, ott_site_country, type):
+        self._config = config()['ott_sites'][ott_site_uid]
+        # urls:
+        self.url = 'https://www.starplus.com'
+        # generic:
+        self._platform_code = self._config['countries'][ott_site_country]
+        self._created_at = time.strftime("%Y-%m-%d")
+        self.country_code = ott_site_country
+        self.name = ott_site_uid
+        self.mongo = mongo()
+        self.sesion = requests.session()
+        # bbdd:
+        self.collections = config()['mongo']['collections']
+        self.database = self.collections['top_ten_hackaton']
+        # data lists:
+        self.prepayloads = []
+        self.payloads = []
+        self.payloads_epi = []
+        self.scraped = []
+        self.scraped_epi = []
+        self.ids_originals = []
         self.skippedTitles = 0
         self.skippedEpis = 0
-        self.url = 'https://www.starplus.com'
+
+        try:
+            if platform.system() == 'Linux':
+                Display(visible=0, size=(1366, 768)).start()
+        except Exception:
+            pass
+
         self.driver = webdriver.Firefox()
         self.content = []
         self.epis = []
@@ -52,8 +83,9 @@ class Starplus():
     def scrap_movies(self):
         ''' Extracts all movies data '''
         WebDriverWait(self.driver, 60).until(
-                        EC.element_to_be_clickable((By.XPATH, "//a[@data-testid='navigation-item-4-PELÍCULAS']"))).click()
-        time.sleep(2)   
+                        EC.element_to_be_clickable((
+                            By.XPATH, "//a[@data-testid='navigation-item-4-PELÍCULAS']"))).click()
+        time.sleep(2)
         principal = self.driver.find_element_by_css_selector(
                     "div[class='sc-hgRTRy jrzXWb']").find_elements_by_css_selector(
                     "a[class='sc-EHOje WxEV basic-card skipToContentTarget']")
@@ -115,7 +147,7 @@ class Starplus():
                     content['cast'] = None
                 movies.append(content)
                 print(content)
-                
+
                 self.driver.execute_script("window.history.go(-1)")
                 time.sleep(4)
                 counter += 1
@@ -125,7 +157,7 @@ class Starplus():
                 continue
             except IndexError:
                 break
-    
+
     def scrap_series(self):
         ''' Extract all series data '''
 
@@ -156,5 +188,3 @@ class Starplus():
         except TimeoutException:
             for _ in range(5):
                 print('--- LOGIN TIMEOUT ---')
-
-Starplus()
