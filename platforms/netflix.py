@@ -73,7 +73,7 @@ class Netflix():
         ''' Extract all data of contents '''
 
         for _id in ids:
-            url = self.content_url+_id
+            url = self.content_url_id
             self.driver.get(url)
             time.sleep(5)
             title = self.driver.find_element_by_css_selector(
@@ -115,7 +115,7 @@ class Netflix():
                         "div[class='episodeSelector-season-name']")
                 content['type'] = 'serie'
             except NoSuchElementException:
-                content['type'] = 'movie'
+                content['type'] = 'Content'
             try:
                 pre_directors = data.find_element_by_css_selector(
                         "div[data-uia='previewModal--tags-person']").find_elements_by_tag_name('a')
