@@ -319,7 +319,7 @@ class HBOMax():
         payload.year = self.get_year(json, type_)
         payload.genres = self.get_genres(json, type_)
         payload.rating = self.get_rating(json, type_)
-        payload.images = self.get_images(json, type_)
+        payload.image = self.get_images(json, type_)
         payload.synopsis = self.get_synopsis(json, type_)
         payload.cast = self.get_cast(json, type_)
         payload.directors = self.get_directors(json, type_)
@@ -425,7 +425,7 @@ class HBOMax():
             if image:
                 formatted_image = self.format_image(image['uri'])
                 images.append(formatted_image)
-        return images if images else None
+        return images[0] if images else None
 
     def get_synopsis(self, json, type_):
         synopsis = None
