@@ -33,8 +33,7 @@ class SeasonHelper():
                       "Image": self.get_images(episodes_season),
                       "Directors": self.get_directors(episodes_season),
                       "Cast": self.get_cast(episodes_season),
-                      "Episodes": self.get_cant_ep(episodes_season),
-                      "IsOriginal": self.is_original(episodes_season)
+                      "Episodes": self.get_cant_ep(episodes_season)
                       })
         return seasons if seasons else None
 
@@ -98,7 +97,7 @@ class SeasonHelper():
 
     @staticmethod
     def get_deeplink(episodes):
-        return episodes[0]['Deeplinks']['Web']
+        return episodes[0]['Deeplink']
 
     @staticmethod
     def get_id(episodes):
