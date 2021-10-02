@@ -1,28 +1,60 @@
-import time
 import re
-from datetime import datetime
+import time
+import requests
+from common import config
+from utils.mongo import mongo
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.support.ui import WebDriverWait
+from utils.datamanager import Datamanager
 from selenium.webdriver.common.by import By       
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+
 class Netflix():
-    def __init__(self):
-        # bbdd:
-        self.skippedTitles = 0
-        self.skippedEpis = 0
+    """
+    TODO:
+
+    - DATOS IMPORTANTES:
+        - Versión Final: TODO:
+        - VPN: TODO:
+        - ¿Usa Selenium?: TODO:
+        - ¿Usa Playwright?: TODO:
+        - ¿Tiene API?: TODO:
+        - ¿Usa BS4?: TODO:
+        - ¿Se relaciona con scripts TP? TODO:
+        - ¿Instancia otro archivo de la carpeta "platforms"?: TODO:
+        - Última revisión: TODO:
+        - ¿Cuanto demoró la ultima vez? TODO:
+        - ¿Cuantos contenidos trajo la ultima vez? TODO:
+
+    - OTROS COMENTARIOS:
+        TODO:
+    """
+    def __init__(self, ott_site_uid, ott_site_country, type):
+        self._config = config()['ott_sites'][ott_site_uid]
+        # urls:
         self.url = 'https://www.netflix.com/'
         self.kids_url = 'https://www.netflix.com/Kids'
         self.content_url = 'https://www.netflix.com/latest?jbv='
-        self.driver = webdriver.Firefox()
+        # generic:
+        self.country_code = ott_site_country
+        self.name = ott_site_uid
+        self.mongo = mongo()
+        self.sesion = requests.session()
+        # bbdd:
+        self.collections = config()['mongo']['collections']
+        self.database = self.collections['top_ten_hackaton']
+        # data lists:
         self.content = []
-        self.epis = []
+        self.scraped = []
+        self.skippedTitles = 0
+        self.skippedEpis = 0
+
+        self.driver = webdriver.Firefox()
 
         self._scraping()
-    
+
     def _scraping(self):
         self.login()
         ids = self.extract_ids()
@@ -37,15 +69,15 @@ class Netflix():
                         EC.element_to_be_clickable((By.XPATH, "//div[@class='previewModal-close']"))).click()
         kids = self.driver.find_element_by_xpath("//a[@href='/Kids']")
         self.driver.execute_script("arguments[0].click();", kids)
-        
+
         time.sleep(4)
         ids = self.extract_ids()
         if not ids:
             raise AssertionError('--- NO PUDIERON SCRAPEARSE IDS KIDS MOST WATCHED ---')
         else:
-            content = self.extract_data(ids)
-            for content in content:
-                print(content)
+            self.extract_data(ids)
+        Datamanager._insertIntoDB(self, self.content, self.database)
+        self.sesion.close()
 
     def extract_ids(self):
         ''' Extract ten principals contents ids '''
@@ -91,25 +123,23 @@ class Netflix():
             content['rating'] = self.driver.find_element_by_css_selector(
                     "span[class='maturity-number']").text
             try:
-                episode_selector = self.driver.find_element_by_css_selector(
+                self.driver.find_element_by_css_selector(
                     "div[class='episodeSelector-dropdown']").click()
                 dropdown = self.driver.find_elements_by_class_name(
                     "ltr-bbkt7g")
                 content['seasons'] = []
                 for data in dropdown:
-                    match_epi = re.search(r'(episodes\)|episodios\))', data.text, flags=re.I)
+                    match_epi = re.search(
+                        r'(episodes\)|episodios\))', data.text, flags=re.I)
                     if match_epi:
                         content['seasons'].append({'Season': data.find_element_by_css_selector(
                         "div[class='episodeSelector--option']").text.split('(')[0].strip(), 'Episodes': data.find_element_by_css_selector(
                         "span[class='episodeSelector--option-label-numEpisodes']").text.replace('(','').replace(')','')})
-                        print(content['seasons'])
             except Exception:
                 find_episodios = self.driver.find_elements_by_class_name("titleCard-title_index")
                 if find_episodios:
                     content['seasons'] = []
                     content['seasons'].append({'Season': "1", 'Episodes': str(len(find_episodios))})
-                    print(content['seasons'])
-
             try:
                 content['duration'] = self.driver.find_element_by_css_selector(
                     "span[class='duration']").text
@@ -148,73 +178,32 @@ class Netflix():
                 content['genres'] = [genre.text.replace(',', '') for genre in pre_genres]
             except NoSuchElementException:
                 content['genres'] = None
-            
             yield content
 
-    def build_payload(self, content, is_epi=False):
+    def build_payload(self, content):
         '''Builds payload depending type'''
-
-        # Indica si el payload a completar es un episodio:
-        if is_epi:
-            self.is_epi = True
-        else:
-            self.is_epi = False
-
         payload = {}
-        payload['PlatformCode'] = self._platform_code
+        payload['PlatformName'] = self.name
+        payload['PlatformCountry'] = self.country_code
         payload['Id'] = content['id']
         payload['Title'] = content['title']
-        payload['OriginalTitle'] = None
-        #payload['CleanTitle'] = _replace(payload['Title'])
         payload['Type'] = content['type'] if content.get('type') else None
         payload['Seasons'] = content['seasons'] if content.get('seasons') else None
 
-        # En el caso que sea episodio, se agregan y quitan estos campos:
-        if self.is_epi:
-            payload["ParentTitle"] = self.check_title(content['parent_title'])
-            payload["ParentId"] = content['parent_id']
-            payload["Season"] = self.check_season(content['season'])
-            payload["Episode"] = self.check_number(content['number'])
-            del payload["OriginalTitle"]
-            del payload['CleanTitle']
-            del payload['Type']
-            del payload['Seasons']
-
         payload['Year'] = self.check_year(content['year']) if content.get('year') else None
-        payload['Duration'] = int(content['duration']) if content.get('duration') else None
-        payload['ExternalIds'] = None  
-        payload['Deeplinks'] = {"Web": content['url'], "Android": None, "iOS": None}
+        payload['Duration'] = int(content['duration']) if content.get('duration') else None 
+        payload['Deeplink'] = {"Web": content['url'], "Android": None, "iOS": None}
         payload['Synopsis'] = self.check_synopsis(content['synopsis']) if content.get('synopsis') else None
         payload['Image'] = [content['image']]
         payload['Rating'] = content['rating']
-        payload['Provider'] = [content['provider']]    
-        payload['Playback'] = None
         payload['Genres'] = self.check_genres(content['genres'])
         payload['Cast'] = self.check_cast(content['cast']) if content.get('cast') else None
         payload['Crew'] = None
         payload['Directors'] = self.check_director(content['director']) if content.get('director') else None
-        payload['Availability'] = content['availability'] if content.get('availability') else None
-        payload['Download'] = self.check_download(content['download'])
         payload['IsOriginal'] = None
-        payload['IsBranded'] = None
-        payload['Subtitles'] = None
-        payload['Dubbed'] = None
 
-        if self.is_epi:
-            del payload['ExternalIds']
-            del payload['IsBranded']
-
-        payload['IsAdult'] = None
-        payload['Packages'] = [{'Type': 'subscription-vod'}]
-        payload['Country'] = None
-        payload['Timestamp'] = datetime.now().isoformat()
-        payload['CreatedAt'] = self._created_at
-        
-        if self.is_epi:
-            print(f'--- FORMATTED PAYLOAD EPISODE ', payload['Id'], ' ', payload['Title'], ' ---\n\n')
-        else:
-            print(f'--- FORMATTED PAYLOAD CONTENT ', payload['Id'], ' ', payload['Title'], ' ---\n\n')
-            self.content.append(payload)
+        Datamanager._checkDBandAppend(
+            self, payload, self.scraped, self.content)
 
     def login(self):
         ''' Logins into Netflix '''
@@ -236,6 +225,3 @@ class Netflix():
         except TimeoutException:
             for _ in range(5):
                 print('--- LOGIN TIMEOUT ---')
-
-
-Netflix()
