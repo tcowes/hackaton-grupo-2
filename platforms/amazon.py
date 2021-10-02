@@ -33,6 +33,9 @@ class Amazon():
         # BBDD's.
         self.name               = ott_site_uid
         self.mongo                  = mongo()
+        self.collections = config()['mongo']['collections']
+        self.database = self.collections['top_ten_hackaton']
+        self.skippedTitles = 0
         #self.titanPreScraping       = config()['mongo']['collections']['prescraping']
         #self.titanScraping          = config()['mongo']['collections']['scraping']
         #self.titanScrapingEpisodes  = config()['mongo']['collections']['episode']
@@ -109,17 +112,18 @@ class Amazon():
         soup = BeautifulSoup(browser.page_source, 'lxml')
         all_option = soup.find('ul', {'class':"pv-navigation-bar"})
         a_class = all_option.find_all("a")
-        
+        all_payloads = []
+
         url_cate_serie = None
         url_cate_movie = None
-        """
+        
         for a in a_class:
             if a.string == "Películas":
                 url_cate_movie =self.url_base + a["href"]            
             
             if a.string == "Series":
                 url_cate_serie =self.url_base + a["href"]
-        """
+    
         print(url_cate_movie)
         print(url_cate_serie)
         
@@ -127,11 +131,11 @@ class Amazon():
         print("Lista de Top 10 Home")
         print(urls_top_ten_home)
         
-        if url_cate_movie:
-            browser.get(url_cate_movie)
-            urls_top_ten_movies = self.get_url_top_ten(browser)
+        if url_cate_serie:
+            browser.get(url_cate_serie)
+            urls_top_ten_series = self.get_url_top_ten(browser)
             print("Lista de Top 10 Movie")
-            print(urls_top_ten_movies)
+            print(urls_top_ten_series)
         
         if url_cate_movie:
             browser.get(url_cate_movie)
@@ -140,7 +144,14 @@ class Amazon():
             print(urls_top_ten_movies)
         
         for url in urls_top_ten_home:
-            self.get_payload(url, browser)
+            all_payloads.append(self.get_payload(url, browser))
+        
+        for url in urls_top_ten_movies:
+            all_payloads.append(self.get_payload(url, browser))
+        
+        for url in urls_top_ten_series:
+            all_payloads.append(self.get_payload(url, browser))
+        Datamanager._insertIntoDB(self, all_payloads, self.database)
     ##################################################################       
     def get_id(self, _string):
         id = ""
@@ -167,10 +178,10 @@ class Amazon():
    
     def get_type(self, soup):
         _span = soup.find_all('span', {'class':"XqYSS8"})
-        if len(_span) == 1:
-            return "serie"
-        else:
+        if len(_span) == 2 and "Temporada" not in _span[0].string and "Temporada" not in _span[1].string:
             return "movie"
+        else:
+            return "serie"
     
     def get_year_and_duration(self, soup):
         span_dur_year = soup.find_all('span', {'class':"XqYSS8"})
@@ -184,11 +195,12 @@ class Amazon():
         return soup.find('span', {'class':"XqYSS8"}).string
     
     def get_synopsis(self, soup):
-        span_synopsis = soup.find('span', {'class':"_3qsVvm _1wxob_"}).string
-        return span_synopsis.string
+        span_synopsis = soup.find('div', {'class':"_3qsVvm _1wxob_"})
+        synopsis = span_synopsis.find("div")
+        return synopsis.string
 
     def get_img(self, soup):
-        span_img = soup.find('span', {'class':"atf-full"})
+        span_img = soup.find('img', {'id':"atf-full"})
         return span_img["src"]
 
     def get_payload(self, url, browser):
@@ -222,7 +234,7 @@ class Amazon():
             'Number'       : None,
             'Crew'         : None,
         }
-        print(payload)
+        #print(payload)
         return payload
 
     def get_url_top_ten(self, browser):
