@@ -30,8 +30,8 @@ class AppleTV():
     def scraping(self):
         countries = self.get_countries_codes()
         scraped_countries = []
-        pre_data = []
-        for x, country in enumerate(countries):
+        for x, country in enumerate(countries[:5]):
+            pre_data = []
             print("---------- Analizando Top Ten en " + country["Country"] + ". País " + str(x+1) + " de " + str(len(countries)) + " ----------")
             self.driver.get(self.main_url + country["Code"])
             WebDriverWait(self.driver, 60).until(
@@ -43,16 +43,6 @@ class AppleTV():
             html = self.driver.page_source  
             soup = BeautifulSoup(html, "html.parser")
             all_divs = soup.find_all("div",class_="shelf-grid")
-            top_series = []
-            top_movies = []
-            top_kids = []
-            category_identificator = {
-                "ember52": "Drama Series",
-                "ember59": "Comedy Series",
-                "ember65": "Feature Films",
-                "ember71": "Non-Fiction Series",
-                "ember77": "Family Fun"
-            }
             category_id_list = "ember52", "ember59", "ember65", "ember71", "ember77"
             
             for data in all_divs:
@@ -79,7 +69,7 @@ class AppleTV():
                         payload = {
                             'Id': id,
                             'Country': country["Code"],
-                            'Category': category_identificator[category_id],
+                            'Category': category_id,
                             'Index': index
                         }
                         pre_data.append(payload)
@@ -98,13 +88,18 @@ class AppleTV():
                         payload = {
                             'Id': id,
                             'Country': country,
-                            'Category': category_identificator[category_id],
+                            'Category': category_id,
                             'Index': index
                         }
                         pre_data.append(payload)
             self.get_metadata(pre_data)
             
     def get_metadata(self, pre_data):
+        drama_series = []
+        nofi_series = []
+        comedy_series = []
+        kids = []
+        movies = []
         print("..... Cruzando datos con APIs para extraer más metadata ......")
         print("Pre Data:")
         for element in pre_data:
@@ -125,14 +120,14 @@ class AppleTV():
             elif data['data']['content']['type'] == 'Show':
                 type = 'serie'
                 seasons = []
-                seasons_year ={}
+                seasons_year = {}
                 seasons_ids  = {}
                 season_episodes ={}
                 skip = 0
 
                 while True:
+                    print("Validando Episodios")
                     epiurl = 'https://tv.apple.com/api/uts/v2/view/show/{}/episodes?skip={skip}&count=50&utsk=6e3013c6d6fae3c2%3A%3A%3A%3A%3A%3A235656c069bb0efb&caller=web&sf=143441&v=36&pfm=web&locale=en-US'.format(element["Id"], skip=skip)
-                    print('URL EPISODE ',epiurl)
                     response = self.getUrl(url=epiurl)
                     epidata = response.json()
                     scraped = []
@@ -175,7 +170,6 @@ class AppleTV():
                         skip = skip + 50
                     else:
                         break
-
 
                 if data['data']['content'].get('genres'):
                     genres = []
@@ -231,11 +225,16 @@ class AppleTV():
                     synopsis = None
                     
                 if type == "serie":
+                    if element["Category"] == "ember77":
+                        section = "Top 10 Kids"
+                    else:
+                        section = "Top 10 Series"
                     payload = {
                         "platform.name": "AppleTV",
                         "platform.country": element["Country"],
                         "id": element["Id"],
                         "title": data['data']['content']['title'],
+                        "section": section,
                         "year": year,
                         "deeplink_web": deeplink,
                         "synopsis": synopsis,
@@ -254,6 +253,7 @@ class AppleTV():
                         "platform.country": element["Country"],
                         "id": element["Id"],
                         "title": data['data']['content']['title'],
+                        "section": "Top 10 Movies",
                         "year": year,
                         "duration": duration,
                         "deeplink_web": deeplink,
@@ -267,8 +267,27 @@ class AppleTV():
                         "crew": crew
                 }
             
-            print(payload)
+            if element["Category"] == "ember52":
+                drama_series.append(payload)
+            elif element["Category"] == "ember59":
+                if (len(comedy_series) < 4):
+                    comedy_series.append(payload)
+            elif element["Category"] == "ember71":
+                if nofi_series == []:
+                    nofi_series.append(payload)
+                    
+            if element["Category"] == "ember65":
+                movies.append(payload)
                 
+            if element["Category"] == "ember77":
+                kids.append(payload)
+
+            print(payload)
+        total_series = (drama_series + comedy_series + nofi_series)
+        print("total series", str(len(total_series)))
+        print("total movies", str(len(movies)))
+        print("kids", str(len(kids)))
+        insertar total series        
                         
     def get_countries_codes(self):
         countries = []
